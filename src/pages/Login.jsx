@@ -104,7 +104,7 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="auth-footer">
+        <div className="auth-links">
           <Link to="/forgot-password">ลืมรหัสผ่าน?</Link> ·{' '}
           <Link to="/register">สมัครสมาชิก</Link>
         </div>
@@ -114,3 +114,4 @@ const Login = () => {
 }
 
 export default Login
+
