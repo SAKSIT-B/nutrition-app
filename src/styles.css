@@ -621,3 +621,46 @@ body.theme-dark .search-input {
   text-align: center;
 }
 
+/* ทำให้ชื่อวัตถุดิบ / เมนู อ่านได้ชัดทั้ง light และ dark */
+.item-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text); /* ใช้สีตัวหนังสือหลักของธีม */
+}
+
+body.theme-dark .item-name {
+  color: #e5e7eb; /* ขาวนิด ๆ สำหรับพื้นหลังเข้ม */
+}
+
+.item-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* layout ของฟอร์ม nutrient ในหน้า ManageItems */
+.nutrient-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nutrient-group {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  background: var(--bg-card);
+}
+
+.nutrient-group-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.nutrient-group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+
