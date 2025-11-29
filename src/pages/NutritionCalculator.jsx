@@ -110,7 +110,7 @@ const NutritionCalculator = () => {
     <div className="card">
       <h2>การคำนวณคุณค่าทางโภชนาการ</h2>
       <p className="card-subtitle">
-        หน่วยข้อมูลโภชนาการเป็นต่อ 100 กรัม (kcal, mg, µg, g) ตามรายการที่ Admin/Mod กรอกไว้
+        หน่วยข้อมูลโภชนาการเป็นต่อ 100 กรัม (kcal, mg, µg, g)
       </p>
 
       <div className="search-row">
@@ -189,3 +189,4 @@ const NutritionCalculator = () => {
 }
 
 export default NutritionCalculator
+
