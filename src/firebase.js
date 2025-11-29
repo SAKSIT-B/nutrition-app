@@ -5,7 +5,7 @@ import { getFirestore } from "firebase/firestore";
 
 // เอาค่าพวกนี้จาก Firebase console ของครู
 const firebaseConfig = {
-  apiKey: "AIzaSyAZDEq9KC4WnaYMWSJOrBw3iwbnsewGiiM",
+  apiKey: "AIzaSyDhrDlZgwPtyYVtq8x18TgPIWPKq4vTo5k",
   authDomain: "nutrition-find.firebaseapp.com",
   projectId: "nutrition-find",
   storageBucket: "nutrition-find.firebasestorage.app",
@@ -20,3 +20,4 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 
 export default app;
+
