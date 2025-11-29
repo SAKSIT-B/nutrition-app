@@ -68,13 +68,22 @@ const Register = () => {
 
       showToast('สมัครสมาชิกสำเร็จ', 'success')
       navigate('/dashboard')
-    } catch (err) {
-      console.error(err)
-      setError('ไม่สามารถสมัครสมาชิกได้')
-      showToast('สมัครสมาชิกไม่สำเร็จ', 'error')
-    } finally {
-      setLoading(false)
-    }
+  } catch (error) {
+  console.error('Register error:', error.code, error.message)
+
+  // ถ้าอยากโชว์ให้ผู้ใช้เห็นชัดขึ้น
+  let message = 'สมัครสมาชิกไม่สำเร็จ'
+  if (error.code === 'auth/email-already-in-use') {
+    message = 'อีเมลนี้ถูกใช้สมัครแล้ว'
+  } else if (error.code === 'auth/weak-password') {
+    message = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'
+  } else if (error.code === 'auth/operation-not-allowed') {
+    message = 'ยังไม่ได้เปิดใช้งาน Email/Password ใน Firebase Authentication'
+  }
+
+  // ใช้ toast/alert เดิมของครู
+  showToast(message, 'error')
+}
   }
 
   return (
@@ -149,3 +158,4 @@ const Register = () => {
 }
 
 export default Register
+
