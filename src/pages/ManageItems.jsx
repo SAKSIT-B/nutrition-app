@@ -1,120 +1,171 @@
-import React, { useEffect, useState } from 'react'
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, orderBy, query } from 'firebase/firestore'
-import { db } from '../firebase'
-import { useToast } from '../contexts/ToastContext'
-import { NUTRIENT_FIELDS } from './nutritionFields'
+// src/pages/ManageItems.jsx
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from 'firebase/firestore';
+import { db } from '../firebase';
+import { useToast } from '../contexts/ToastContext';
 
-const emptyItem = {
-  name: '',
-  category: '',
-  nutrients: {},
-}
+const EMPTY_NUTRIENTS = {
+  energy: '',
+  water: '',
+  protein: '',
+  fat: '',
+  carb: '',
+  ash: '',
+  calcium: '',
+  phosphorus: '',
+  magnesium: '',
+  sodium: '',
+  potassium: '',
+  iron: '',
+  copper: '',
+  zinc: '',
+  iodine: '',
+  betacarotene: '',
+  retinol: '',
+  vitaminA: '',
+  thiamin: '',
+  riboflavin: '',
+  niacin: '',
+  vitaminC: '',
+  vitaminE: '',
+};
 
 const ManageItems = () => {
-  const { showToast } = useToast()
-  const [items, setItems] = useState([])
-  const [editingId, setEditingId] = useState(null)
-  const [form, setForm] = useState(emptyItem)
-  const [loading, setLoading] = useState(false)
+  const [items, setItems] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [searchAll, setSearchAll] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const [form, setForm] = useState({
+    name: '',
+    description: '',
+    category: '',
+    nutrients: { ...EMPTY_NUTRIENTS },
+  });
+
+  const { showToast } = useToast();
 
   const loadItems = async () => {
     try {
-      setLoading(true)
-      const q = query(collection(db, 'items'), orderBy('name'))
-      const snap = await getDocs(q)
-      setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
-    } catch (err) {
-      console.error(err)
-      showToast('โหลดข้อมูลไม่สำเร็จ', 'error')
-    } finally {
-      setLoading(false)
+      const snap = await getDocs(collection(db, 'ingredients'));
+      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setItems(docs);
+    } catch (e) {
+      console.error(e);
+      showToast('โหลดข้อมูลไม่สำเร็จ', 'error');
     }
-  }
+  };
 
   useEffect(() => {
-    loadItems()
-  }, [])
-
-  const setField = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const setNutrient = (id, value) => {
-    const num = Number(value) || 0
-    setForm((prev) => ({
-      ...prev,
-      nutrients: { ...(prev.nutrients || {}), [id]: num },
-    }))
-  }
-
-  const startNew = () => {
-    setEditingId(null)
-    setForm(emptyItem)
-  }
+    loadItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const startEdit = (item) => {
-    setEditingId(item.id)
+    setEditingId(item.id);
     setForm({
       name: item.name || '',
+      description: item.description || '',
       category: item.category || '',
-      nutrients: item.nutrients || {},
-    })
-  }
+      nutrients: { ...EMPTY_NUTRIENTS, ...(item.nutrients || {}) },
+    });
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setForm({
+      name: '',
+      description: '',
+      category: '',
+      nutrients: { ...EMPTY_NUTRIENTS },
+    });
+  };
+
+  const handleChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleNutrientChange = (field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      nutrients: { ...prev.nutrients, [field]: value },
+    }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!form.name) {
-      showToast('กรุณากรอกชื่อรายการ', 'error')
-      return
+    e.preventDefault();
+    if (!form.name.trim()) {
+      showToast('กรุณากรอกชื่อวัตถุดิบ / เมนู', 'error');
+      return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true)
       if (editingId) {
-        await updateDoc(doc(db, 'items', editingId), form)
-        showToast('แก้ไขข้อมูลสำเร็จ', 'success')
+        const ref = doc(db, 'ingredients', editingId);
+        await updateDoc(ref, form);
+        showToast('อัพเดทข้อมูลสำเร็จ', 'success');
       } else {
-        await addDoc(collection(db, 'items'), form)
-        showToast('เพิ่มรายการสำเร็จ', 'success')
+        await addDoc(collection(db, 'ingredients'), form);
+        showToast('เพิ่มข้อมูลสำเร็จ', 'success');
       }
-      startNew()
-      loadItems()
-    } catch (err) {
-      console.error(err)
-      showToast('บันทึกข้อมูลไม่สำเร็จ', 'error')
+      resetForm();
+      await loadItems();
+    } catch (e) {
+      console.error(e);
+      showToast('บันทึกข้อมูลไม่สำเร็จ', 'error');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) return
+  const handleDelete = async (item) => {
+    if (!window.confirm(`ต้องการลบ "${item.name}" ใช่ไหม?`)) return;
     try {
-      await deleteDoc(doc(db, 'items', id))
-      showToast('ลบรายการสำเร็จ', 'success')
-      loadItems()
-    } catch (err) {
-      console.error(err)
-      showToast('ลบรายการไม่สำเร็จ', 'error')
+      await deleteDoc(doc(db, 'ingredients', item.id));
+      showToast('ลบข้อมูลสำเร็จ', 'success');
+      await loadItems();
+    } catch (e) {
+      console.error(e);
+      showToast('ลบข้อมูลไม่สำเร็จ', 'error');
     }
-  }
+  };
+
+  const filteredItems = useMemo(() => {
+    const q = searchAll.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((item) => {
+      const name = (item.name || '').toLowerCase();
+      const cat = (item.category || '').toLowerCase();
+      const desc = (item.description || '').toLowerCase();
+      return name.includes(q) || cat.includes(q) || desc.includes(q);
+    });
+  }, [items, searchAll]);
 
   return (
     <div className="card">
-      <h2>การเพิ่มและแก้ไขรายการวัตถุดิบ / เมนู</h2>
+      <h2 className="page-title">การเพิ่มและแก้ไขรายการวัตถุดิบ / เมนู</h2>
       <p className="card-subtitle">
-        ข้อมูลที่กรอกทุกค่าเป็นต่อ 100 กรัม ตามหน่วยที่กำหนด
+        ข้อมูลคุณค่าทางโภชนาการต่อ 100 กรัม ตามหน่วยที่กำหนด
       </p>
 
-      <form className="form-grid" onSubmit={handleSubmit}>
+      {/* ฟอร์มกรอกข้อมูล */}
+      <form onSubmit={handleSubmit} className="form-grid manage-form">
         <div className="form-row">
           <label>
             ชื่อวัตถุดิบ / เมนู (แสดงในตัวคำนวณ)
             <input
               type="text"
               value={form.name}
-              onChange={(e) => setField('name', e.target.value)}
-              required
+              onChange={(e) => handleChange('name', e.target.value)}
+              placeholder="เช่น ก๋วยเตี๋ยว เส้นจันทน์ แห้ง"
             />
           </label>
         </div>
@@ -125,29 +176,276 @@ const ManageItems = () => {
             <input
               type="text"
               value={form.category}
-              onChange={(e) => setField('category', e.target.value)}
+              onChange={(e) => handleChange('category', e.target.value)}
+              placeholder="เช่น ธัญพืชและผลิตภัณฑ์ / อาหารจานเดียว"
             />
           </label>
         </div>
 
         <div className="form-row">
-          <h3>ค่าคุณค่าทางโภชนาการ (ต่อ 100 กรัม)</h3>
+          <label>
+            ข้อมูลเพิ่มเติม / หมายเหตุ (ถ้ามี)
+            <input
+              type="text"
+              value={form.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              placeholder="ข้อมูลที่มา, วิธีปรุง, ยี่ห้อ ฯลฯ"
+            />
+          </label>
         </div>
 
-        <div className="nutrient-grid">
-          {NUTRIENT_FIELDS.map((field) => (
-            <div key={field.id} className="nutrient-cell">
-              <label className="nutrient-label">
-                {field.label} [{field.unit}]
+        <hr style={{ margin: '12px 0', borderColor: 'var(--border)' }} />
+
+        <h3 style={{ margin: '0 0 8px' }}>
+          ค่าคุณค่าทางโภชนาการ (ต่อ 100 กรัม)
+        </h3>
+
+        {/* ทำเป็น grid 2 แถว 4–5 คอลัมน์ เพื่อให้อ่านง่าย */}
+        <div className="nutrient-form-grid">
+          {/* Main nutrients */}
+          <div className="nutrient-group">
+            <div className="nutrient-group-title">กลุ่มที่ 1 สารอาหารหลัก</div>
+            <div className="nutrient-group-grid">
+              <label>
+                Energy [kcal]
+                <input
+                  type="number"
+                  value={form.nutrients.energy}
+                  onChange={(e) =>
+                    handleNutrientChange('energy', e.target.value)
+                  }
+                />
               </label>
-              <input
-                type="number"
-                step="0.01"
-                value={form.nutrients?.[field.id] ?? ''}
-                onChange={(e) => setNutrient(field.id, e.target.value)}
-              />
+              <label>
+                Water [g]
+                <input
+                  type="number"
+                  value={form.nutrients.water}
+                  onChange={(e) =>
+                    handleNutrientChange('water', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Protein [g]
+                <input
+                  type="number"
+                  value={form.nutrients.protein}
+                  onChange={(e) =>
+                    handleNutrientChange('protein', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Fat [g]
+                <input
+                  type="number"
+                  value={form.nutrients.fat}
+                  onChange={(e) => handleNutrientChange('fat', e.target.value)}
+                />
+              </label>
+              <label>
+                Carbohydrate total [g]
+                <input
+                  type="number"
+                  value={form.nutrients.carb}
+                  onChange={(e) => handleNutrientChange('carb', e.target.value)}
+                />
+              </label>
+              <label>
+                Ash [g]
+                <input
+                  type="number"
+                  value={form.nutrients.ash}
+                  onChange={(e) => handleNutrientChange('ash', e.target.value)}
+                />
+              </label>
             </div>
-          ))}
+          </div>
+
+          {/* Minerals */}
+          <div className="nutrient-group">
+            <div className="nutrient-group-title">กลุ่มที่ 2 แร่ธาตุ</div>
+            <div className="nutrient-group-grid">
+              <label>
+                Calcium [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.calcium}
+                  onChange={(e) =>
+                    handleNutrientChange('calcium', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Phosphorus [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.phosphorus}
+                  onChange={(e) =>
+                    handleNutrientChange('phosphorus', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Magnesium [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.magnesium}
+                  onChange={(e) =>
+                    handleNutrientChange('magnesium', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Sodium [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.sodium}
+                  onChange={(e) =>
+                    handleNutrientChange('sodium', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Potassium [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.potassium}
+                  onChange={(e) =>
+                    handleNutrientChange('potassium', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Iron [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.iron}
+                  onChange={(e) =>
+                    handleNutrientChange('iron', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Copper [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.copper}
+                  onChange={(e) =>
+                    handleNutrientChange('copper', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Zinc [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.zinc}
+                  onChange={(e) =>
+                    handleNutrientChange('zinc', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Iodine [µg]
+                <input
+                  type="number"
+                  value={form.nutrients.iodine}
+                  onChange={(e) =>
+                    handleNutrientChange('iodine', e.target.value)
+                  }
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Vitamins */}
+          <div className="nutrient-group">
+            <div className="nutrient-group-title">กลุ่มที่ 3 วิตามิน</div>
+            <div className="nutrient-group-grid">
+              <label>
+                Betacarotene [µg]
+                <input
+                  type="number"
+                  value={form.nutrients.betacarotene}
+                  onChange={(e) =>
+                    handleNutrientChange('betacarotene', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Retinol [µg]
+                <input
+                  type="number"
+                  value={form.nutrients.retinol}
+                  onChange={(e) =>
+                    handleNutrientChange('retinol', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Total Vitamin A (RAE) [µg]
+                <input
+                  type="number"
+                  value={form.nutrients.vitaminA}
+                  onChange={(e) =>
+                    handleNutrientChange('vitaminA', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Thiamin [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.thiamin}
+                  onChange={(e) =>
+                    handleNutrientChange('thiamin', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Riboflavin [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.riboflavin}
+                  onChange={(e) =>
+                    handleNutrientChange('riboflavin', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Niacin [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.niacin}
+                  onChange={(e) =>
+                    handleNutrientChange('niacin', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Vitamin C [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.vitaminC}
+                  onChange={(e) =>
+                    handleNutrientChange('vitaminC', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Vitamin E [mg]
+                <input
+                  type="number"
+                  value={form.nutrients.vitaminE}
+                  onChange={(e) =>
+                    handleNutrientChange('vitaminE', e.target.value)
+                  }
+                />
+              </label>
+            </div>
+          </div>
         </div>
 
         <div className="form-actions">
@@ -155,34 +453,53 @@ const ManageItems = () => {
             {editingId ? 'บันทึกการแก้ไข' : 'เพิ่มรายการ'}
           </button>
           {editingId && (
-            <button type="button" onClick={startNew}>
+            <button type="button" onClick={resetForm}>
               ยกเลิกการแก้ไข
             </button>
           )}
         </div>
       </form>
 
-      <hr style={{ margin: '24px 0' }} />
+      <hr style={{ margin: '16px 0', borderColor: 'var(--border)' }} />
 
-      <h3>รายการทั้งหมด</h3>
-      {loading && <div>กำลังโหลด...</div>}
+      {/* ช่องค้นหาจากรายการทั้งหมด */}
+      <div className="search-row">
+        <input
+          type="search"
+          placeholder="ค้นหารายการทั้งหมดตามชื่อ / หมวด / หมายเหตุ..."
+          value={searchAll}
+          onChange={(e) => setSearchAll(e.target.value)}
+          className="nutrition-search-input"
+        />
+      </div>
+
+      <h3 style={{ marginTop: 12 }}>รายการทั้งหมด</h3>
       <div className="item-list">
-        {items.map((item) => (
+        {filteredItems.map((item) => (
           <div key={item.id} className="item-row">
-            <div>
-              <div className="item-name">{item.name}</div>
-              <div className="item-meta">{item.category || '-'}</div>
+            <div className="item-name">{item.name}</div>
+            <div className="item-meta">
+              {item.category || 'ไม่มีหมวดหมู่'}{' '}
+              {item.description ? `• ${item.description}` : ''}
             </div>
-            <div className="item-actions">
-              <button onClick={() => startEdit(item)}>แก้ไข</button>
-              <button onClick={() => handleDelete(item.id)}>ลบ</button>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button type="button" onClick={() => startEdit(item)}>
+                แก้ไข
+              </button>
+              <button type="button" onClick={() => handleDelete(item)}>
+                ลบ
+              </button>
             </div>
           </div>
         ))}
-        {!items.length && <div>ยังไม่มีข้อมูล</div>}
+        {!filteredItems.length && (
+          <div style={{ padding: '8px 10px', fontSize: '0.85rem' }}>
+            ไม่มีข้อมูล
+          </div>
+        )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ManageItems
+export default ManageItems;
