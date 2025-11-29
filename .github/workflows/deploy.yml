@@ -2,8 +2,8 @@ name: Deploy Vite app to GitHub Pages
 
 on:
   push:
-    branches: [ main ]   # รันทุกครั้งที่ push ไป main
-  workflow_dispatch:      # กดรันเองได้จากแท็บ Actions
+    branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: read
