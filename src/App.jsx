@@ -5,28 +5,32 @@ import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
+import Footer from './components/Footer'  
 
 const App = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" />} />
+    <>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route
+          path="/dashboard/*"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<div>ไม่พบหน้านี้</div>} />
+      </Routes>
 
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-
-      <Route
-        path="/dashboard/*"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route path="*" element={<div style={{ padding: 24 }}>ไม่พบหน้านี้</div>} />
-    </Routes>
+      {/* เครดิตด้านล่างทุกหน้า */}
+      <Footer />
+    </>
   )
 }
 
 export default App
+
