@@ -450,3 +450,126 @@ button[disabled] {
     transform: rotate(360deg);
   }
 }
+
+/* ===========================
+   ปรับให้ธีมสว่าง (Light) อ่านง่ายขึ้น
+   =========================== */
+
+/* ตัวหนังสือหลักให้เข้มขึ้น */
+body.theme-light {
+  color: #111827; /* เทาเข้มใกล้ดำ */
+}
+
+/* พื้นหลังส่วนเนื้อหาหลัก (Dashboard) ให้เทาอ่อน */
+body.theme-light .app-main,
+body.theme-light .dashboard-layout,
+body.theme-light .dashboard-page {
+  background: #f3f4f6; /* เทาอ่อน */
+}
+
+/* กล่อง/การ์ดในหน้า Dashboard */
+body.theme-light .card,
+body.theme-light .panel,
+body.theme-light .dashboard-card,
+body.theme-light .nutrition-panel {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+/* หัวข้อใหญ่ให้เข้มและชัด */
+body.theme-light h1,
+body.theme-light h2,
+body.theme-light .page-title {
+  color: #111827;
+}
+
+/* คำอธิบาย/ตัวหนังสือรองให้เป็นเทากลาง */
+body.theme-light .muted,
+body.theme-light .subtitle,
+body.theme-light p,
+body.theme-light label {
+  color: #4b5563;
+}
+
+/* ช่องค้นหา / input ทั่วไป ในธีมสว่าง */
+body.theme-light input[type="text"],
+body.theme-light input[type="search"],
+body.theme-light input[type="number"],
+body.theme-light input[type="email"],
+body.theme-light input[type="password"],
+body.theme-light textarea,
+body.theme-light .nutrition-search-input {
+  background-color: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px; /* ให้ช่องค้นหาดูกลม ๆ */
+}
+
+/* placeholder ของช่องค้นหาให้เห็นชัดขึ้น */
+body.theme-light input::placeholder,
+body.theme-light .nutrition-search-input::placeholder {
+  color: #9ca3af;
+}
+
+/* ===========================
+   ธีมมืด (Dark) ให้ contrast ดีขึ้น
+   =========================== */
+
+body.theme-dark {
+  background: #020617;
+  color: #e5e7eb;
+}
+
+body.theme-dark .app-main,
+body.theme-dark .dashboard-layout,
+body.theme-dark .dashboard-page {
+  background: #020617;
+}
+
+/* กล่อง/การ์ดในธีมมืด */
+body.theme-dark .card,
+body.theme-dark .panel,
+body.theme-dark .dashboard-card,
+body.theme-dark .nutrition-panel {
+  background: #020617;
+  border: 1px solid #1f2937;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* ตัวหนังสือให้ขาวจัดขึ้น */
+body.theme-dark h1,
+body.theme-dark h2,
+body.theme-dark .page-title {
+  color: #f9fafb;
+}
+
+body.theme-dark p,
+body.theme-dark label,
+body.theme-dark .muted,
+body.theme-dark .subtitle {
+  color: #e5e7eb;
+}
+
+/* ช่องค้นหา / input ในธีมมืด */
+body.theme-dark input[type="text"],
+body.theme-dark input[type="search"],
+body.theme-dark input[type="number"],
+body.theme-dark input[type="email"],
+body.theme-dark input[type="password"],
+body.theme-dark textarea,
+body.theme-dark .nutrition-search-input {
+  background-color: #020617;
+  color: #f9fafb;
+  border: 1px solid #4b5563;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+}
+
+body.theme-dark input::placeholder,
+body.theme-dark .nutrition-search-input::placeholder {
+  color: #9ca3af;
+}
+
+
