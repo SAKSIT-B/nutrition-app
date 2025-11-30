@@ -1194,13 +1194,13 @@ body.theme-dark .nutrition-label {
 }
 
 .gda-box-unit {
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   color: #333;
 }
 
 .gda-box-percent {
   padding: 6px 4px;
-  font-size: 1rem;
+  font-size: 0.75rem;
   font-weight: bold;
 }
 
@@ -1251,6 +1251,7 @@ body.theme-dark .gda-label {
 .selected-list::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
 
 
 
