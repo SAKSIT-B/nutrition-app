@@ -15,6 +15,7 @@ const NUTRIENT_GROUPS = [
       { key: 'protein', label: 'Protein [g]' },
       { key: 'fat', label: 'Fat [g]' },
       { key: 'carb', label: 'Carbohydrate total [g]' },
+      { key: 'fibre', label: 'Dietary fibre (Crud fibre) [g]' },
       { key: 'ash', label: 'Ash [g]' },
     ],
   },
@@ -74,6 +75,7 @@ const NutritionCalculator = () => {
       {
         id: item.id,
         name: item.name,
+        nameeng: item.nameeng,
         category: item.category || '',
         amount: 100, // เริ่มต้นที่ 100 กรัม
         nutrients: item.nutrients || {},
@@ -123,6 +125,7 @@ const NutritionCalculator = () => {
     if (!q) return items;
     return items.filter((i) => {
       const name = (i.name || '').toLowerCase();
+      const nameeng = (i.nameeng || '').toLowerCase();
       const cat = (i.category || '').toLowerCase();
       return name.includes(q) || cat.includes(q);
     });
@@ -191,6 +194,7 @@ const NutritionCalculator = () => {
               onClick={() => addItem(item)}
             >
               <div className="item-name">{item.name}</div>
+              <div className="item-nameeng">{item.nameeng}</div>
               <div className="item-meta">
                 {item.category || 'ไม่มีหมวดหมู่กำหนด'}
               </div>
@@ -212,6 +216,7 @@ const NutritionCalculator = () => {
             <div key={`${item.id}-${index}`} className="selected-row">
               <div className="selected-name">
                 <strong>{item.name}</strong>{' '}
+                <strong>{item.nameeng}</strong>{' '}
                 <span className="item-meta">
                   ({item.category || 'ไม่มีหมวดหมู่'})
                 </span>
@@ -262,4 +267,5 @@ const NutritionCalculator = () => {
 };
 
 export default NutritionCalculator;
+
 
