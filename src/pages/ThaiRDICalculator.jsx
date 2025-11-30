@@ -429,50 +429,59 @@ const ThaiRDICalculator = () => {
                 </div>
               </div>
             ) : (
-              /* ฉลากแบบ GDA */
-              <div className="gda-label">
-                <div className="gda-header">
-                  <div className="gda-title">โภชนาการต่อหนึ่งหน่วยบริโภค ({servingSize} ก.)</div>
-                </div>
+{/* ฉลากแบบ GDA */}
+<div className="gda-label">
+  <div className="gda-header">
+    <div>คุณค่าทางโภชนาการต่อ <strong>{servingSize}</strong> กรัม</div>
+    <div>ควรแบ่งกิน <strong>{servingsPerContainer}</strong> ครั้ง</div>
+  </div>
 
-                <div className="gda-circles">
-                  <div className="gda-circle">
-                    <div className="gda-value">{perServing.energy || 0}</div>
-                    <div className="gda-unit">กิโลแคลอรี</div>
-                    <div className="gda-label-text">พลังงาน</div>
-                    <div className="gda-percent">{percentRDI.energy || 0}%</div>
-                  </div>
+  <div className="gda-boxes">
+    {/* พลังงาน */}
+    <div className="gda-box">
+      <div className="gda-box-header">พลังงาน</div>
+      <div className="gda-box-value">
+        <div className="gda-box-number">{perServing.energy || 0}</div>
+        <div className="gda-box-unit">กิโลแคลอรี</div>
+      </div>
+      <div className="gda-box-percent">{percentRDI.energy || 0}%</div>
+    </div>
 
-                  <div className="gda-circle warning">
-                    <div className="gda-value">{perServing.sugar || 0}</div>
-                    <div className="gda-unit">ก.</div>
-                    <div className="gda-label-text">น้ำตาล</div>
-                    <div className="gda-percent">{percentRDI.sugar || 0}%</div>
-                  </div>
+    {/* น้ำตาล */}
+    <div className="gda-box">
+      <div className="gda-box-header">น้ำตาล</div>
+      <div className="gda-box-value">
+        <div className="gda-box-number">{perServing.sugar || 0}</div>
+        <div className="gda-box-unit">กรัม</div>
+      </div>
+      <div className="gda-box-percent">{percentRDI.sugar || 0}%</div>
+    </div>
 
-                  <div className="gda-circle warning">
-                    <div className="gda-value">{perServing.fat || 0}</div>
-                    <div className="gda-unit">ก.</div>
-                    <div className="gda-label-text">ไขมัน</div>
-                    <div className="gda-percent">{percentRDI.fat || 0}%</div>
-                  </div>
+    {/* ไขมัน */}
+    <div className="gda-box">
+      <div className="gda-box-header">ไขมัน</div>
+      <div className="gda-box-value">
+        <div className="gda-box-number">{perServing.fat || 0}</div>
+        <div className="gda-box-unit">กรัม</div>
+      </div>
+      <div className="gda-box-percent">{percentRDI.fat || 0}%</div>
+    </div>
 
-                  <div className="gda-circle warning">
-                    <div className="gda-value">{perServing.sodium || 0}</div>
-                    <div className="gda-unit">มก.</div>
-                    <div className="gda-label-text">โซเดียม</div>
-                    <div className="gda-percent">{percentRDI.sodium || 0}%</div>
-                  </div>
-                </div>
+    {/* โซเดียม */}
+    <div className="gda-box">
+      <div className="gda-box-header">โซเดียม</div>
+      <div className="gda-box-value">
+        <div className="gda-box-number">{perServing.sodium || 0}</div>
+        <div className="gda-box-unit">มิลลิกรัม</div>
+      </div>
+      <div className="gda-box-percent">{percentRDI.sodium || 0}%</div>
+    </div>
+  </div>
 
-                <div className="gda-footer">
-                  % ของปริมาณที่แนะนำต่อวัน (Thai RDI) พลังงาน 2,000 กิโลแคลอรี
-                </div>
-
-                <div className="gda-message">
-                  บริโภคแต่น้อย และออกกำลังกายเพื่อสุขภาพ
-                </div>
-              </div>
+  <div className="gda-footer">
+    คิดเป็นร้อยละของปริมาณสูงสุดที่ควรได้รับต่อวัน
+  </div>
+</div>
             )}
           </div>
         </div>
