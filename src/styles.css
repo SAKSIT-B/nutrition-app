@@ -99,7 +99,7 @@ body {
 
 .topbar {
   display: flex;
-  align-items: center;
+  align-s: center;
   justify-content: space-between;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
@@ -116,7 +116,7 @@ body {
 
 .topbar-right {
   display: flex;
-  align-items: center;
+  align-s: center;
   gap: 8px;
 }
 
@@ -162,7 +162,7 @@ body {
 .auth-page {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-s: center;
   justify-content: center;
   background: radial-gradient(circle at top, #dbeafe, var(--bg));
 }
@@ -637,7 +637,7 @@ body.theme-dark .item-name {
 }
 
 .item-nameeng {
-  font-size: 0.95rem;
+  font-size: 0.7rem;
   font-weight: 500;
   color: var(--text); /* ใช้สีตัวหนังสือหลักของธีม */
 }
@@ -677,6 +677,7 @@ body.theme-dark .item-nameeng {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 10px;
 }
+
 
 
 
