@@ -87,7 +87,8 @@ const Register = () => {
       <section className="auth-left">
         <h1 className="auth-app-name">Nutrition App</h1>
         <p className="auth-app-desc">
-          ลงทะเบียนเพื่อใช้งานระบบคำนวณและจัดการข้อมูลโภชนาการสำหรับงานสอนและงานวิจัย
+          ลงทะเบียนเพื่อใช้งานระบบคำนวณและจัดการข้อมูลโภชนาการ
+          สำหรับงานสอนและงานวิจัย
         </p>
         <ul className="auth-app-points">
           <li>บันทึกวัตถุดิบ / เมนูที่ใช้บ่อย</li>
@@ -175,5 +176,6 @@ const Register = () => {
 }
 
 export default Register
+
 
 
