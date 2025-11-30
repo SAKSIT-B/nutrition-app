@@ -343,53 +343,36 @@ const NutritionCalculator = () => {
             </div>
           )}
 
-          {/* แถบเปลี่ยนหน้า (pagination) */}
-          {filteredItems.length > pageSize && (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: '8px',
-                fontSize: '0.8rem',
-              }}
-            >
-              <button
-                type="button"
-                onClick={goPrev}
-                disabled={page === 1}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '999px',
-                  border: '1px solid var(--border)',
-                  background: 'transparent',
-                  cursor: page === 1 ? 'default' : 'pointer',
-                }}
-              >
-                ◀ ก่อนหน้า
-              </button>
-              <span>
-                หน้า {page} / {totalPages}
-              </span>
-              <button
-                type="button"
-                onClick={goNext}
-                disabled={page === totalPages}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '999px',
-                  border: '1px solid var(--border)',
-                  background: 'transparent',
-                  cursor:
-                    page === totalPages ? 'default' : 'pointer',
-                }}
-              >
-                ถัดไป ▶
-              </button>
-            </div>
-          )}
-        </div>
-
+        {/* แถบเปลี่ยนหน้า (pagination) */}
+{filteredItems.length > pageSize && (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: '8px',
+      fontSize: '0.8rem',
+    }}
+  >
+    <button
+      type="button"
+      onClick={goPrev}
+      disabled={page === 1}
+      className="pagination-btn"
+    >
+      ◀ ก่อนหน้า
+    </button>
+    <span>หน้า {page} / {totalPages}</span>
+    <button
+      type="button"
+      onClick={goNext}
+      disabled={page === totalPages}
+      className="pagination-btn"
+    >
+      ถัดไป ▶
+    </button>
+  </div>
+)}
         {/* ขวา: รายการที่เลือก + ผลรวม */}
         <div>
           <h3 style={{ marginTop: 0 }}>รายการที่เลือกไว้</h3>
@@ -459,3 +442,4 @@ const NutritionCalculator = () => {
 };
 
 export default NutritionCalculator;
+
