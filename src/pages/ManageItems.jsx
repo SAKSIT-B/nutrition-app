@@ -7,16 +7,19 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  serverTimestamp, // ใช้สำหรับบันทึกเวลา createdAt / updatedAt
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useToast } from '../contexts/ToastContext';
 
+// ค่าเริ่มต้นของชุดโภชนาการทั้งหมด
 const EMPTY_NUTRIENTS = {
   energy: '',
   water: '',
   protein: '',
   fat: '',
   carb: '',
+  fibre: '', // เพิ่มให้รองรับ Dieraty fibre (Crud fibre)
   ash: '',
   calcium: '',
   phosphorus: '',
@@ -45,6 +48,7 @@ const ManageItems = () => {
 
   const [form, setForm] = useState({
     name: '',
+    nameeng: '',
     description: '',
     category: '',
     nutrients: { ...EMPTY_NUTRIENTS },
@@ -52,10 +56,28 @@ const ManageItems = () => {
 
   const { showToast } = useToast();
 
+  // -----------------------------
+  // โหลดข้อมูลทั้งหมดจาก Firestore
+  // และเรียงตามเวลา updatedAt/createdAt ให้ล่าสุดอยู่บนสุด
+  // -----------------------------
   const loadItems = async () => {
     try {
       const snap = await getDocs(collection(db, 'items'));
-      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      let docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      // เรียงตาม updatedAt (ถ้าไม่มีให้ใช้ createdAt, ถ้าไม่มีอีกให้เป็น 0)
+      docs.sort((a, b) => {
+        const ta =
+          (a.updatedAt && a.updatedAt.toMillis && a.updatedAt.toMillis()) ||
+          (a.createdAt && a.createdAt.toMillis && a.createdAt.toMillis()) ||
+          0;
+        const tb =
+          (b.updatedAt && b.updatedAt.toMillis && b.updatedAt.toMillis()) ||
+          (b.createdAt && b.createdAt.toMillis && b.createdAt.toMillis()) ||
+          0;
+        return tb - ta; // ใหม่สุดอยู่บน
+      });
+
       setItems(docs);
     } catch (e) {
       console.error(e);
@@ -68,6 +90,9 @@ const ManageItems = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // -----------------------------
+  // จัดการโหมดแก้ไข / รีเซ็ตฟอร์ม
+  // -----------------------------
   const startEdit = (item) => {
     setEditingId(item.id);
     setForm({
@@ -90,6 +115,9 @@ const ManageItems = () => {
     });
   };
 
+  // -----------------------------
+  // handle input ฟอร์ม
+  // -----------------------------
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -101,6 +129,10 @@ const ManageItems = () => {
     }));
   };
 
+  // -----------------------------
+  // บันทึกข้อมูล (เพิ่ม / แก้ไข)
+  // พร้อมใส่ createdAt / updatedAt
+  // -----------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) {
@@ -111,15 +143,24 @@ const ManageItems = () => {
     setLoading(true);
     try {
       if (editingId) {
+        // แก้ไข: ใส่ updatedAt ใหม่ทุกครั้ง
         const ref = doc(db, 'items', editingId);
-        await updateDoc(ref, form);
-        showToast('อัพเดทข้อมูลสำเร็จ', 'success');
+        await updateDoc(ref, {
+          ...form,
+          updatedAt: serverTimestamp(),
+        });
+        showToast('อัพเดทข้อมูลสำเร็จ 🥗', 'success');
       } else {
-        await addDoc(collection(db, 'items'), form);
-        showToast('เพิ่มข้อมูลสำเร็จ', 'success');
+        // เพิ่มใหม่: ใส่ createdAt และ updatedAt
+        await addDoc(collection(db, 'items'), {
+          ...form,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        showToast('เพิ่มข้อมูลสำเร็จ ✨', 'success');
       }
       resetForm();
-      await loadItems();
+      await loadItems(); // โหลดใหม่เพื่อให้เรียงตามเวลาล่าสุด
     } catch (e) {
       console.error(e);
       showToast('บันทึกข้อมูลไม่สำเร็จ', 'error');
@@ -128,11 +169,14 @@ const ManageItems = () => {
     }
   };
 
+  // -----------------------------
+  // ลบข้อมูล
+  // -----------------------------
   const handleDelete = async (item) => {
     if (!window.confirm(`ต้องการลบ "${item.name}" ใช่ไหม?`)) return;
     try {
       await deleteDoc(doc(db, 'items', item.id));
-      showToast('ลบข้อมูลสำเร็จ', 'success');
+      showToast('ลบข้อมูลสำเร็จ 🗑️', 'success');
       await loadItems();
     } catch (e) {
       console.error(e);
@@ -140,6 +184,9 @@ const ManageItems = () => {
     }
   };
 
+  // -----------------------------
+  // filter สำหรับช่องค้นหา "รายการทั้งหมด"
+  // -----------------------------
   const filteredItems = useMemo(() => {
     const q = searchAll.trim().toLowerCase();
     if (!q) return items;
@@ -148,10 +195,18 @@ const ManageItems = () => {
       const nameeng = (item.nameeng || '').toLowerCase();
       const cat = (item.category || '').toLowerCase();
       const desc = (item.description || '').toLowerCase();
-      return name.includes(q) || nameeng.includes(q) || cat.includes(q) || desc.includes(q);
+      return (
+        name.includes(q) ||
+        nameeng.includes(q) ||
+        cat.includes(q) ||
+        desc.includes(q)
+      );
     });
   }, [items, searchAll]);
 
+  // -----------------------------
+  // render
+  // -----------------------------
   return (
     <div className="card">
       <h2 className="page-title">การเพิ่มและแก้ไขรายการวัตถุดิบ / เมนู</h2>
@@ -256,7 +311,9 @@ const ManageItems = () => {
                 <input
                   type="text"
                   value={form.nutrients.fat}
-                  onChange={(e) => handleNutrientChange('fat', e.target.value)}
+                  onChange={(e) =>
+                    handleNutrientChange('fat', e.target.value)
+                  }
                 />
               </label>
               <label>
@@ -264,15 +321,19 @@ const ManageItems = () => {
                 <input
                   type="text"
                   value={form.nutrients.carb}
-                  onChange={(e) => handleNutrientChange('carb', e.target.value)}
+                  onChange={(e) =>
+                    handleNutrientChange('carb', e.target.value)
+                  }
                 />
               </label>
-               <label>
+              <label>
                 Dieraty fibre (Crud fibre) [g]
                 <input
                   type="text"
                   value={form.nutrients.fibre}
-                  onChange={(e) => handleNutrientChange('fibre', e.target.value)}
+                  onChange={(e) =>
+                    handleNutrientChange('fibre', e.target.value)
+                  }
                 />
               </label>
               <label>
@@ -280,7 +341,9 @@ const ManageItems = () => {
                 <input
                   type="text"
                   value={form.nutrients.ash}
-                  onChange={(e) => handleNutrientChange('ash', e.target.value)}
+                  onChange={(e) =>
+                    handleNutrientChange('ash', e.target.value)
+                  }
                 />
               </label>
             </div>
@@ -496,7 +559,7 @@ const ManageItems = () => {
         />
       </div>
 
-      <h3 style={{ marginTop: 12 }}>รายการทั้งหมด</h3>
+      <h3 style={{ marginTop: 12 }}>📚 รายการทั้งหมด</h3>
       <div className="item-list">
         {filteredItems.map((item) => (
           <div key={item.id} className="item-row">
@@ -527,9 +590,3 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
-
-
-
-
-
-
