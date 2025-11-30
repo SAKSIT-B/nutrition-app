@@ -33,7 +33,7 @@ const Sidebar = () => {
           การคำนวณโภชนาการ
         </NavLink>
 
-        {(role === 'admin' || role === 'mod') && (
+        {(role === 'admin' || role === 'owner' || role === 'mod') && (
           <NavLink
             to="/dashboard/manage-items"
             className={({ isActive }) =>
@@ -44,7 +44,7 @@ const Sidebar = () => {
           </NavLink>
         )}
 
-        {role === 'admin' && (
+        {(role === 'admin' || role === 'owner') && (
           <NavLink
             to="/dashboard/admin"
             className={({ isActive }) =>
@@ -60,4 +60,5 @@ const Sidebar = () => {
 }
 
 export default Sidebar
+
 
