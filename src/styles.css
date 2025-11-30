@@ -1221,6 +1221,36 @@ body.theme-dark .gda-label {
   color: #000;
 }
 
+/* ===========================
+   กล่องรายการที่เลือกไว้ (มี scroll)
+   =========================== */
+.selected-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+  margin-bottom: 12px;
+}
+
+/* ปรับ scrollbar ให้สวยขึ้น */
+.selected-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.selected-list::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-radius: 3px;
+}
+
+.selected-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.selected-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
 
 
 
