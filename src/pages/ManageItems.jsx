@@ -38,6 +38,8 @@ const EMPTY_NUTRIENTS = {
   niacin: '',
   vitaminC: '',
   vitaminE: '',
+  sugar: '',
+  cholessterol:'',
 };
 
 const ManageItems = () => {
@@ -530,9 +532,34 @@ const ManageItems = () => {
                   }
                 />
               </label>
+               {/* Other */}
+          <div className="nutrient-group">
+            <div className="nutrient-group-title">กลุ่มที่ 4 อื่น ๆ</div>
+            <div className="nutrient-group-grid">
+              <label>
+                Sugar [g]
+                <input
+                  type="text"
+                  value={form.nutrients.sugar}
+                  onChange={(e) =>
+                    handleNutrientChange('sugar', e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Cholessterol [mg]
+                <input
+                  type="text"
+                  value={form.nutrients.cholessterol}
+                  onChange={(e) =>
+                    handleNutrientChange('cholessterol', e.target.value)
+                  }
+                />
+              </label>
             </div>
           </div>
         </div>
+      </div>
 
         <div className="form-actions">
           <button type="submit" disabled={loading}>
@@ -589,5 +616,6 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
+
 
 
