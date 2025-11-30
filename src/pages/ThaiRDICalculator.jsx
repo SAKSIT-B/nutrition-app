@@ -1,11 +1,11 @@
 // src/pages/ThaiRDICalculator.jsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useToast } from '../contexts/ToastContext';
+import html2canvas from 'html2canvas';
 
 // ค่า Thai RDI ตามประกาศกระทรวงสาธารณสุข ฉบับที่ 445 (2024)
-// สำหรับคนไทยอายุ 6 ปีขึ้นไป ฐานพลังงาน 2,000 kcal/วัน
 const THAI_RDI = {
   energy: { value: 2000, unit: 'kcal', label: 'พลังงาน', labelEng: 'Energy' },
   protein: { value: 60, unit: 'g', label: 'โปรตีน', labelEng: 'Protein' },
@@ -33,9 +33,12 @@ const ThaiRDICalculator = () => {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState([]);
-  const [servingSize, setServingSize] = useState(100); // หนึ่งหน่วยบริโภค (กรัม)
-  const [servingsPerContainer, setServingsPerContainer] = useState(1); // จำนวนหน่วยบริโภคต่อภาชนะ
+  const [servingSize, setServingSize] = useState(100);
+  const [servingsPerContainer, setServingsPerContainer] = useState(1);
+  const [labelType, setLabelType] = useState('full'); // 'full' หรือ 'gda'
+  const [exporting, setExporting] = useState(false);
   const { showToast } = useToast();
+  const labelRef = useRef(null);
 
   // โหลดข้อมูลจาก Firestore
   useEffect(() => {
@@ -53,7 +56,6 @@ const ThaiRDICalculator = () => {
     load();
   }, [showToast]);
 
-  // เพิ่มรายการ
   const addItem = (item) => {
     setSelected((prev) => [
       ...prev,
@@ -67,12 +69,10 @@ const ThaiRDICalculator = () => {
     ]);
   };
 
-  // ลบรายการ
   const removeItem = (index) => {
     setSelected((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // อัพเดทปริมาณ
   const updateAmount = (index, value) => {
     const num = Number(value) || 0;
     setSelected((prev) =>
@@ -135,6 +135,31 @@ const ThaiRDICalculator = () => {
   }, [items, search]);
 
   const totalWeight = selected.reduce((sum, item) => sum + item.amount, 0);
+
+  // Export เป็นรูปภาพ
+  const handleExport = async (format) => {
+    if (!labelRef.current) return;
+
+    setExporting(true);
+    try {
+      const canvas = await html2canvas(labelRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2, // ความละเอียดสูงขึ้น
+      });
+
+      const link = document.createElement('a');
+      link.download = `nutrition-label.${format}`;
+      link.href = canvas.toDataURL(`image/${format === 'jpg' ? 'jpeg' : 'png'}`);
+      link.click();
+
+      showToast(`บันทึกเป็น ${format.toUpperCase()} สำเร็จ`, 'success');
+    } catch (e) {
+      console.error(e);
+      showToast('ไม่สามารถบันทึกรูปภาพได้', 'error');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div className="card nutrition-panel">
@@ -230,139 +255,225 @@ const ThaiRDICalculator = () => {
                 />
               </label>
             </div>
-            <p className="muted">
-              น้ำหนักรวมทั้งหมด: {totalWeight} กรัม
-            </p>
+            <p className="muted">น้ำหนักรวมทั้งหมด: {totalWeight} กรัม</p>
+          </div>
+
+          {/* เลือกรูปแบบฉลาก */}
+          <div className="label-type-toggle">
+            <h4>รูปแบบฉลาก</h4>
+            <div className="toggle-buttons">
+              <button
+                type="button"
+                className={`toggle-btn ${labelType === 'full' ? 'active' : ''}`}
+                onClick={() => setLabelType('full')}
+              >
+                แบบเต็ม (Full)
+              </button>
+              <button
+                type="button"
+                className={`toggle-btn ${labelType === 'gda' ? 'active' : ''}`}
+                onClick={() => setLabelType('gda')}
+              >
+                แบบ GDA (ย่อ)
+              </button>
+            </div>
+          </div>
+
+          {/* ปุ่ม Export */}
+          <div className="export-buttons">
+            <h4>บันทึกเป็นรูปภาพ</h4>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => handleExport('png')}
+                disabled={exporting}
+                className="export-btn"
+              >
+                {exporting ? 'กำลังบันทึก...' : 'PNG'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExport('jpg')}
+                disabled={exporting}
+                className="export-btn"
+              >
+                {exporting ? 'กำลังบันทึก...' : 'JPG'}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* ฝั่งขวา: ฉลากโภชนาการ */}
         <div className="rdi-right-panel">
-          <div className="nutrition-label">
-            <div className="label-header">
-              <div className="label-title">ข้อมูลโภชนาการ</div>
-              <div className="label-title-eng">Nutrition Facts</div>
-            </div>
+          <div ref={labelRef}>
+            {labelType === 'full' ? (
+              /* ฉลากแบบเต็ม */
+              <div className="nutrition-label">
+                <div className="label-header">
+                  <div className="label-title">ข้อมูลโภชนาการ</div>
+                  <div className="label-title-eng">Nutrition Facts</div>
+                </div>
 
-            <div className="label-serving">
-              <div>หนึ่งหน่วยบริโภค: {servingSize} กรัม</div>
-              <div>จำนวนหน่วยบริโภคต่อภาชนะ: {servingsPerContainer}</div>
-            </div>
+                <div className="label-serving">
+                  <div>หนึ่งหน่วยบริโภค: {servingSize} กรัม</div>
+                  <div>จำนวนหน่วยบริโภคต่อภาชนะ: {servingsPerContainer}</div>
+                </div>
 
-            <div className="label-divider thick"></div>
+                <div className="label-divider thick"></div>
 
-            <div className="label-row header">
-              <span>คุณค่าทางโภชนาการต่อหนึ่งหน่วยบริโภค</span>
-              <span>% Thai RDI*</span>
-            </div>
+                <div className="label-row header">
+                  <span>คุณค่าทางโภชนาการต่อหนึ่งหน่วยบริโภค</span>
+                  <span>% Thai RDI*</span>
+                </div>
 
-            <div className="label-divider"></div>
+                <div className="label-divider"></div>
 
-            {/* พลังงาน */}
-            <div className="label-row bold">
-              <span>พลังงานทั้งหมด {perServing.energy || 0} กิโลแคลอรี</span>
-              <span>{percentRDI.energy || 0}%</span>
-            </div>
+                <div className="label-row bold">
+                  <span>พลังงานทั้งหมด {perServing.energy || 0} กิโลแคลอรี</span>
+                  <span>{percentRDI.energy || 0}%</span>
+                </div>
 
-            <div className="label-divider"></div>
+                <div className="label-divider"></div>
 
-            {/* ไขมัน */}
-            <div className="label-row bold">
-              <span>ไขมันทั้งหมด {perServing.fat || 0} ก.</span>
-              <span>{percentRDI.fat || 0}%</span>
-            </div>
-            <div className="label-row indent">
-              <span>ไขมันอิ่มตัว {perServing.saturatedFat || 0} ก.</span>
-              <span>{percentRDI.saturatedFat || 0}%</span>
-            </div>
+                <div className="label-row bold">
+                  <span>ไขมันทั้งหมด {perServing.fat || 0} ก.</span>
+                  <span>{percentRDI.fat || 0}%</span>
+                </div>
+                <div className="label-row indent">
+                  <span>ไขมันอิ่มตัว {perServing.saturatedFat || 0} ก.</span>
+                  <span>{percentRDI.saturatedFat || 0}%</span>
+                </div>
 
-            <div className="label-divider"></div>
+                <div className="label-divider"></div>
 
-            {/* โปรตีน */}
-            <div className="label-row bold">
-              <span>โปรตีน {perServing.protein || 0} ก.</span>
-              <span>{percentRDI.protein || 0}%</span>
-            </div>
+                <div className="label-row bold">
+                  <span>โปรตีน {perServing.protein || 0} ก.</span>
+                  <span>{percentRDI.protein || 0}%</span>
+                </div>
 
-            <div className="label-divider"></div>
+                <div className="label-divider"></div>
 
-            {/* คาร์โบไฮเดรต */}
-            <div className="label-row bold">
-              <span>คาร์โบไฮเดรตทั้งหมด {perServing.carb || 0} ก.</span>
-              <span>{percentRDI.carb || 0}%</span>
-            </div>
-            <div className="label-row indent">
-              <span>ใยอาหาร {perServing.fibre || 0} ก.</span>
-              <span>{percentRDI.fibre || 0}%</span>
-            </div>
-            <div className="label-row indent">
-              <span>น้ำตาล {perServing.sugar || 0} ก.</span>
-              <span>{percentRDI.sugar || 0}%</span>
-            </div>
+                <div className="label-row bold">
+                  <span>คาร์โบไฮเดรตทั้งหมด {perServing.carb || 0} ก.</span>
+                  <span>{percentRDI.carb || 0}%</span>
+                </div>
+                <div className="label-row indent">
+                  <span>ใยอาหาร {perServing.fibre || 0} ก.</span>
+                  <span>{percentRDI.fibre || 0}%</span>
+                </div>
+                <div className="label-row indent">
+                  <span>น้ำตาล {perServing.sugar || 0} ก.</span>
+                  <span>{percentRDI.sugar || 0}%</span>
+                </div>
 
-            <div className="label-divider"></div>
+                <div className="label-divider"></div>
 
-            {/* โซเดียม */}
-            <div className="label-row bold">
-              <span>โซเดียม {perServing.sodium || 0} มก.</span>
-              <span>{percentRDI.sodium || 0}%</span>
-            </div>
+                <div className="label-row bold">
+                  <span>โซเดียม {perServing.sodium || 0} มก.</span>
+                  <span>{percentRDI.sodium || 0}%</span>
+                </div>
 
-            <div className="label-divider thick"></div>
+                <div className="label-divider thick"></div>
 
-            {/* วิตามินและแร่ธาตุ */}
-            <div className="label-section-title">วิตามินและแร่ธาตุ</div>
+                <div className="label-section-title">วิตามินและแร่ธาตุ</div>
 
-            <div className="label-vitamins-grid">
-              <div className="label-vitamin-row">
-                <span>วิตามิน A</span>
-                <span>{percentRDI.vitaminA || 0}%</span>
+                <div className="label-vitamins-grid">
+                  <div className="label-vitamin-row">
+                    <span>วิตามิน A</span>
+                    <span>{percentRDI.vitaminA || 0}%</span>
+                  </div>
+                  <div className="label-vitamin-row">
+                    <span>วิตามิน C</span>
+                    <span>{percentRDI.vitaminC || 0}%</span>
+                  </div>
+                  <div className="label-vitamin-row">
+                    <span>วิตามิน E</span>
+                    <span>{percentRDI.vitaminE || 0}%</span>
+                  </div>
+                  <div className="label-vitamin-row">
+                    <span>วิตามิน B1</span>
+                    <span>{percentRDI.thiamin || 0}%</span>
+                  </div>
+                  <div className="label-vitamin-row">
+                    <span>วิตามิน B2</span>
+                    <span>{percentRDI.riboflavin || 0}%</span>
+                  </div>
+                  <div className="label-vitamin-row">
+                    <span>วิตามิน B3</span>
+                    <span>{percentRDI.niacin || 0}%</span>
+                  </div>
+                  <div className="label-vitamin-row">
+                    <span>แคลเซียม</span>
+                    <span>{percentRDI.calcium || 0}%</span>
+                  </div>
+                  <div className="label-vitamin-row">
+                    <span>เหล็ก</span>
+                    <span>{percentRDI.iron || 0}%</span>
+                  </div>
+                  <div className="label-vitamin-row">
+                    <span>ฟอสฟอรัส</span>
+                    <span>{percentRDI.phosphorus || 0}%</span>
+                  </div>
+                  <div className="label-vitamin-row">
+                    <span>สังกะสี</span>
+                    <span>{percentRDI.zinc || 0}%</span>
+                  </div>
+                </div>
+
+                <div className="label-divider"></div>
+
+                <div className="label-footer">
+                  * ร้อยละของปริมาณสารอาหารที่แนะนำให้บริโภคต่อวัน (Thai RDI)
+                  สำหรับคนไทยอายุตั้งแต่ 6 ปีขึ้นไป
+                  โดยคิดจากความต้องการพลังงานวันละ 2,000 กิโลแคลอรี
+                </div>
               </div>
-              <div className="label-vitamin-row">
-                <span>วิตามิน C</span>
-                <span>{percentRDI.vitaminC || 0}%</span>
-              </div>
-              <div className="label-vitamin-row">
-                <span>วิตามิน E</span>
-                <span>{percentRDI.vitaminE || 0}%</span>
-              </div>
-              <div className="label-vitamin-row">
-                <span>วิตามิน B1</span>
-                <span>{percentRDI.thiamin || 0}%</span>
-              </div>
-              <div className="label-vitamin-row">
-                <span>วิตามิน B2</span>
-                <span>{percentRDI.riboflavin || 0}%</span>
-              </div>
-              <div className="label-vitamin-row">
-                <span>วิตามิน B3</span>
-                <span>{percentRDI.niacin || 0}%</span>
-              </div>
-              <div className="label-vitamin-row">
-                <span>แคลเซียม</span>
-                <span>{percentRDI.calcium || 0}%</span>
-              </div>
-              <div className="label-vitamin-row">
-                <span>เหล็ก</span>
-                <span>{percentRDI.iron || 0}%</span>
-              </div>
-              <div className="label-vitamin-row">
-                <span>ฟอสฟอรัส</span>
-                <span>{percentRDI.phosphorus || 0}%</span>
-              </div>
-              <div className="label-vitamin-row">
-                <span>สังกะสี</span>
-                <span>{percentRDI.zinc || 0}%</span>
-              </div>
-            </div>
+            ) : (
+              /* ฉลากแบบ GDA */
+              <div className="gda-label">
+                <div className="gda-header">
+                  <div className="gda-title">โภชนาการต่อหนึ่งหน่วยบริโภค ({servingSize} ก.)</div>
+                </div>
 
-            <div className="label-divider"></div>
+                <div className="gda-circles">
+                  <div className="gda-circle">
+                    <div className="gda-value">{perServing.energy || 0}</div>
+                    <div className="gda-unit">กิโลแคลอรี</div>
+                    <div className="gda-label-text">พลังงาน</div>
+                    <div className="gda-percent">{percentRDI.energy || 0}%</div>
+                  </div>
 
-            <div className="label-footer">
-              * ร้อยละของปริมาณสารอาหารที่แนะนำให้บริโภคต่อวัน (Thai RDI)
-              สำหรับคนไทยอายุตั้งแต่ 6 ปีขึ้นไป
-              โดยคิดจากความต้องการพลังงานวันละ 2,000 กิโลแคลอรี
-            </div>
+                  <div className="gda-circle warning">
+                    <div className="gda-value">{perServing.sugar || 0}</div>
+                    <div className="gda-unit">ก.</div>
+                    <div className="gda-label-text">น้ำตาล</div>
+                    <div className="gda-percent">{percentRDI.sugar || 0}%</div>
+                  </div>
+
+                  <div className="gda-circle warning">
+                    <div className="gda-value">{perServing.fat || 0}</div>
+                    <div className="gda-unit">ก.</div>
+                    <div className="gda-label-text">ไขมัน</div>
+                    <div className="gda-percent">{percentRDI.fat || 0}%</div>
+                  </div>
+
+                  <div className="gda-circle warning">
+                    <div className="gda-value">{perServing.sodium || 0}</div>
+                    <div className="gda-unit">มก.</div>
+                    <div className="gda-label-text">โซเดียม</div>
+                    <div className="gda-percent">{percentRDI.sodium || 0}%</div>
+                  </div>
+                </div>
+
+                <div className="gda-footer">
+                  % ของปริมาณที่แนะนำต่อวัน (Thai RDI) พลังงาน 2,000 กิโลแคลอรี
+                </div>
+
+                <div className="gda-message">
+                  บริโภคแต่น้อย และออกกำลังกายเพื่อสุขภาพ
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
