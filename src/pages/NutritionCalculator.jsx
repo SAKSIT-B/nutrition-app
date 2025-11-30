@@ -39,9 +39,9 @@ const NUTRIENT_GROUPS = [
       { key: 'betacarotene', label: 'Betacarotene [µg]' },
       { key: 'retinol', label: 'Retinol [µg]' },
       { key: 'vitaminA', label: 'Total Vitamin A (RAE) [µg]' },
-      { key: 'thiamin', label: 'Thiamin [mg]' },
-      { key: 'riboflavin', label: 'Riboflavin [mg]' },
-      { key: 'niacin', label: 'Niacin [mg]' },
+      { key: 'thiamin', label: 'Thiamin (B1) [mg]' },
+      { key: 'riboflavin', label: 'Riboflavin (B2) [mg]' },
+      { key: 'niacin', label: 'Niacin (B3) [mg]' },
       { key: 'vitaminC', label: 'Vitamin C [mg]' },
       { key: 'vitaminE', label: 'Vitamin E [mg]' },
     ],
@@ -267,6 +267,7 @@ const NutritionCalculator = () => {
 };
 
 export default NutritionCalculator;
+
 
 
 
