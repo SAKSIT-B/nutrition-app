@@ -5,6 +5,10 @@ import { signInWithEmailAndPassword } from 'firebase/auth'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useToast } from '../contexts/ToastContext'
+import logo1 from '../assets/logo1.png'
+import logo2 from '../assets/logo2.png'
+import logo3 from '../assets/logo3.png'
+
 
 const Login = () => {
   const [identifier, setIdentifier] = useState('') // username หรือ email
@@ -65,8 +69,32 @@ const Login = () => {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
+   <div className="auth-page">
+    <div className="auth-layout">
+      {/* ฝั่งซ้าย: แนะนำ Nutrition App */}
+      <section className="auth-left">
+        <h1 className="auth-app-name">Nutrition App</h1>
+        <p className="auth-app-desc">
+          เครื่องมือช่วยคำนวณและจัดการข้อมูลคุณค่าทางโภชนาการของวัตถุดิบและเมนูอาหาร
+          เหมาะสำหรับใช้ในการเรียนการสอน งานวิจัย และงานพัฒนาเมนูสุขภาพ
+        </p>
+        <ul className="auth-app-points">
+          <li>ค้นหาและดึงข้อมูลโภชนาการมาตรฐานจากฐานข้อมูล</li>
+          <li>ปรับปริมาณวัตถุดิบเพื่อดูผลรวมคุณค่าทางโภชนาการ</li>
+          <li>ระบบจัดการข้อมูลวัตถุดิบ / เมนู สำหรับผู้ดูแล</li>
+        </ul>
+      </section>
+
+      {/* ฝั่งขวา: ฟอร์มเข้าสู่ระบบ */}
+      <section className="auth-right">
+        <div className="auth-card">
+          {/* โลโก้ 3 อันด้านบน */}
+          <div className="auth-logo-row">
+            <img src={logo1} alt="โลโก้ 1" />
+            <img src={logo2} alt="โลโก้ 2" />
+            <img src={logo3} alt="โลโก้ 3" />
+          </div>
+          
         <h1 className="auth-title">เข้าสู่ระบบ</h1>
 
         {error && <div className="auth-error">{error}</div>}
@@ -113,6 +141,7 @@ const Login = () => {
   )
 }
 export default Login
+
 
 
 
