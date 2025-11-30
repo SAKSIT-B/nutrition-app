@@ -1054,6 +1054,179 @@ body.theme-dark .nutrition-label {
   color: #000;
 }
 
+/* ===========================
+   Toggle ปุ่มเลือกรูปแบบฉลาก
+   =========================== */
+.label-type-toggle {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.label-type-toggle h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+}
+
+.toggle-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.15s ease;
+}
+
+.toggle-btn:hover {
+  background: var(--primary-soft);
+}
+
+.toggle-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* ปุ่ม Export */
+.export-buttons {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.export-buttons h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+}
+
+.export-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #16a34a;
+  color: white;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s ease;
+}
+
+.export-btn:hover {
+  background: #15803d;
+}
+
+.export-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ===========================
+   ฉลาก GDA (แบบย่อ)
+   =========================== */
+.gda-label {
+  width: 100%;
+  max-width: 400px;
+  padding: 16px;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 12px;
+  font-family: 'Arial', sans-serif;
+  color: #000;
+}
+
+.gda-header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.gda-title {
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.gda-circles {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gda-circle {
+  width: 80px;
+  height: 80px;
+  border: 3px solid #2563eb;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: #eff6ff;
+}
+
+.gda-circle.warning {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.gda-value {
+  font-size: 1.1rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.gda-unit {
+  font-size: 0.6rem;
+  color: #666;
+}
+
+.gda-label-text {
+  font-size: 0.65rem;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.gda-percent {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.gda-footer {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #555;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #ddd;
+}
+
+.gda-message {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #dc2626;
+  margin-top: 8px;
+  padding: 6px;
+  background: #fef2f2;
+  border-radius: 6px;
+}
+
+body.theme-dark .gda-label {
+  background: #fff;
+  color: #000;
+}
 
 
 
