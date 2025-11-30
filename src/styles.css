@@ -1252,6 +1252,316 @@ body.theme-dark .gda-label {
   background: var(--text-muted);
 }
 
+/* ===========================
+   สูตรอาหาร (Recipes)
+   =========================== */
+.recipe-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.recipe-tab {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+}
+
+.recipe-tab:hover {
+  background: var(--primary-soft);
+}
+
+.recipe-tab.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recipe-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--bg-card);
+  transition: box-shadow 0.15s ease;
+}
+
+.recipe-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recipe-badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.recipe-badge.public {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.recipe-badge.private {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+body.theme-dark .recipe-badge.public {
+  background: #166534;
+  color: #dcfce7;
+}
+
+body.theme-dark .recipe-badge.private {
+  background: #374151;
+  color: #d1d5db;
+}
+
+.recipe-description {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 4px 0;
+}
+
+.recipe-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 12px 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.recipe-summary {
+  display: flex;
+  gap: 16px;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+
+.recipe-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recipe-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+}
+
+.recipe-btn.view {
+  background: var(--primary);
+  color: white;
+}
+
+.recipe-btn.export {
+  background: #16a34a;
+  color: white;
+}
+
+.recipe-btn.toggle {
+  background: #f59e0b;
+  color: white;
+}
+
+.recipe-btn.delete {
+  background: #dc2626;
+  color: white;
+}
+
+.recipe-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background: var(--bg-card);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-body label {
+  display: block;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.modal-body input[type="text"],
+.modal-body textarea {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.modal-body textarea {
+  resize: vertical;
+}
+
+.checkbox-label {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.recipe-preview {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 16px 0;
+}
+
+.recipe-preview h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+}
+
+.recipe-preview ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.cancel-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.save-recipe-btn {
+  margin-top: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: none;
+  background: #8b5cf6;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+}
+
+.save-recipe-btn:hover:not(:disabled) {
+  background: #7c3aed;
+  transform: translateY(-1px);
+}
+
+.save-recipe-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Recipe items list in modal */
+.recipe-items-list {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 8px 0 16px;
+}
+
+.recipe-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.recipe-item:last-child {
+  border-bottom: none;
+}
+
+.recipe-nutrients {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.nutrient-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
 
 
 
