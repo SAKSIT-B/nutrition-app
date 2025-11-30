@@ -373,6 +373,7 @@ const NutritionCalculator = () => {
     </button>
   </div>
 )}
+</div>
         {/* ขวา: รายการที่เลือก + ผลรวม */}
         <div>
           <h3 style={{ marginTop: 0 }}>รายการที่เลือกไว้</h3>
@@ -442,4 +443,5 @@ const NutritionCalculator = () => {
 };
 
 export default NutritionCalculator;
+
 
