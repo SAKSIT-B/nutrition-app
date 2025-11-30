@@ -4,6 +4,10 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { auth, db } from '../firebase'
 import { doc, setDoc, serverTimestamp, getDocs, query, collection, where } from 'firebase/firestore'
 import { useToast } from '../contexts/ToastContext'
+import logo1 from '../assets/logo1.png'
+import logo2 from '../assets/logo2.png'
+import logo3 from '../assets/logo3.png'
+
 
 const Register = () => {
   const navigate = useNavigate()
@@ -171,4 +175,5 @@ const Register = () => {
 }
 
 export default Register
+
 
