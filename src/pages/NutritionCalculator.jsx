@@ -1,6 +1,6 @@
 // src/pages/NutritionCalculator.jsx
 import React, { useEffect, useMemo, useState } from 'react';
-import { collection, getDocs, query, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
@@ -58,16 +58,18 @@ const NUTRIENT_GROUPS = [
 ];
 
 const NutritionCalculator = () => {
-  const [items, setItems] = useState([]);            // ข้อมูลจาก Firestore ทั้งหมด
-  const [search, setSearch] = useState('');          // คำค้น (ไทย/อังกฤษ/หมวด)
-  const [categoryFilter, setCategoryFilter] = useState('all'); // ตัวกรองหมวด
-  const [selected, setSelected] = useState([]);      // รายการที่ถูกเลือกไปคำนวณ
-  const [baseAmount] = useState(100);                // ฐาน 100 กรัม (ยังไม่ใช้ตอนนี้ แต่เผื่ออนาคต)
-  const [page, setPage] = useState(1);               // หน้าใน list ฝั่งซ้าย
-  const [pageSize, setPageSize] = useState(15);      // จำนวนรายการต่อหน้า
+  const [items, setItems] = useState([]);
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [selected, setSelected] = useState([]);
+  const [baseAmount] = useState(100);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   const { showToast } = useToast();
   const { user, role } = useAuth();
+
+  // State สำหรับ Modal บันทึกสูตร
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [recipeName, setRecipeName] = useState('');
   const [recipeDescription, setRecipeDescription] = useState('');
@@ -75,26 +77,29 @@ const NutritionCalculator = () => {
   const [saving, setSaving] = useState(false);
 
   // -----------------------------
-  // 1) โหลดข้อมูลจาก Firestore (เรียงตามชื่อ name)
+  // 1) โหลดข้อมูลแบบ Realtime
   // -----------------------------
   useEffect(() => {
-    const load = async () => {
-      try {
-        // ใช้ query + orderBy เพื่อให้ Firebase ส่งข้อมูลมาเรียงตัวอักษรแล้ว
-        const q = query(collection(db, 'items'), orderBy('name'));
-        const snap = await getDocs(q);
-        const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const q = query(collection(db, 'items'), orderBy('name'));
+    
+    // ใช้ onSnapshot แทน getDocs เพื่อให้เป็น realtime
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
         setItems(docs);
-      } catch (e) {
-        console.error(e);
+      },
+      (error) => {
+        console.error(error);
         showToast('โหลดข้อมูลวัตถุดิบไม่สำเร็จ', 'error');
       }
-    };
-    load();
+    );
+
+    // Cleanup: ยกเลิก listener เมื่อ component unmount
+    return () => unsubscribe();
   }, [showToast]);
 
   // -----------------------------
-  // 2) ดึงรายการหมวด (category) จากข้อมูลจริง เพื่อใช้ใน dropdown
+  // 2) ดึงรายการหมวด (category)
   // -----------------------------
   const categories = useMemo(() => {
     const set = new Set();
@@ -104,7 +109,6 @@ const NutritionCalculator = () => {
     return Array.from(set).sort();
   }, [items]);
 
-  // reset หน้าให้กลับไปหน้า 1 เมื่อมีการเปลี่ยน filter / ค้นหา / pageSize
   useEffect(() => {
     setPage(1);
   }, [search, categoryFilter, pageSize]);
@@ -120,7 +124,7 @@ const NutritionCalculator = () => {
         name: item.name,
         nameeng: item.nameeng,
         category: item.category || '',
-        amount: 100, // เริ่มต้นที่ 100 กรัม
+        amount: 100,
         nutrients: item.nutrients || {},
       },
     ]);
@@ -138,20 +142,18 @@ const NutritionCalculator = () => {
   };
 
   // -----------------------------
-  // 4) รวมค่าสารอาหารตามปริมาณที่กรอก
+  // 4) รวมค่าสารอาหาร
   // -----------------------------
   const totals = useMemo(() => {
     const result = {};
-    // เตรียม key ทุกตัวไว้ที่ 0 ก่อน
     NUTRIENT_GROUPS.forEach((g) =>
       g.keys.forEach((n) => {
         result[n.key] = 0;
       }),
     );
 
-    // บวกสะสมสารอาหารตามปริมาณ
     selected.forEach((item) => {
-      const ratio = item.amount / 100; // ข้อมูลพื้นฐานต่อ 100 กรัม
+      const ratio = item.amount / 100;
       const nutrients = item.nutrients || {};
       Object.keys(result).forEach((key) => {
         const raw = Number(nutrients[key]) || 0;
@@ -159,7 +161,6 @@ const NutritionCalculator = () => {
       });
     });
 
-    // ปัดทศนิยม 2 ตำแหน่ง
     Object.keys(result).forEach((k) => {
       result[k] = Number(result[k].toFixed(2));
     });
@@ -189,7 +190,7 @@ const NutritionCalculator = () => {
   }, [items, search, categoryFilter]);
 
   // -----------------------------
-  // 6) แบ่งหน้า (pagination) สำหรับ list ฝั่งซ้าย
+  // 6) แบ่งหน้า (pagination)
   // -----------------------------
   const totalPages = Math.max(
     1,
@@ -205,17 +206,14 @@ const NutritionCalculator = () => {
   const goNext = () => setPage((p) => Math.min(totalPages, p + 1));
 
   // -----------------------------
-  // 7) Export Excel จากรายการที่เลือก
+  // 7) Export Excel
   // -----------------------------
   const handleExport = () => {
     if (!selected.length) {
-      ('ยังไม่มีรายการที่เลือก', 'error');
+      showToast('ยังไม่มีรายการที่เลือก', 'error');
       return;
     }
 
-    // แถวที่ 1: ชื่อเมนู/วัตถุดิบ
-    // แถวที่ 2: ปริมาณ (กรัม)
-    // แถวที่ 3 เป็นต้นไป: สารอาหารแต่ละตัว
     const header = ['รายการ', ...selected.map((s) => s.name)];
     const amountRow = ['ปริมาณ (กรัม)', ...selected.map((s) => s.amount)];
 
@@ -241,61 +239,61 @@ const NutritionCalculator = () => {
       new Blob([wbout], { type: 'application/octet-stream' }),
       'nutrition.xlsx',
     );
-    ('Export Excel สำเร็จ', 'success');
+    showToast('Export Excel สำเร็จ', 'success');
   };
 
-// -----------------------------
-// 9) บันทึกสูตรอาหาร
-// -----------------------------
-const handleSaveRecipe = async () => {
-  if (!recipeName.trim()) {
-    showToast('กรุณาตั้งชื่อสูตร', 'error');
-    return;
-  }
-  if (selected.length === 0) {
-    showToast('กรุณาเลือกวัตถุดิบอย่างน้อย 1 รายการ', 'error');
-    return;
-  }
-
-  setSaving(true);
-  try {
-    await addDoc(collection(db, 'recipes'), {
-      name: recipeName.trim(),
-      description: recipeDescription.trim(),
-      isPublic: isPublic,
-      items: selected.map((item) => ({
-        id: item.id,
-        name: item.name,
-        nameeng: item.nameeng || '',
-        category: item.category || '',
-        amount: item.amount,
-        nutrients: item.nutrients || {},
-      })),
-      totalNutrients: { ...totals },
-      createdBy: {
-        uid: user?.uid || '',
-        displayName: user?.displayName || user?.email || 'ไม่ระบุ',
-        role: role || 'user',
-      },
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-
-    showToast('บันทึกสูตรสำเร็จ! 🎉', 'success');
-    setShowSaveModal(false);
-    setRecipeName('');
-    setRecipeDescription('');
-    setIsPublic(false);
-  } catch (e) {
-    console.error(e);
-    showToast('บันทึกสูตรไม่สำเร็จ', 'error');
-  } finally {
-    setSaving(false);
-  }
-};
-  
   // -----------------------------
-  // 8) JSX แสดงผล
+  // 8) บันทึกสูตรอาหาร
+  // -----------------------------
+  const handleSaveRecipe = async () => {
+    if (!recipeName.trim()) {
+      showToast('กรุณาตั้งชื่อสูตร', 'error');
+      return;
+    }
+    if (selected.length === 0) {
+      showToast('กรุณาเลือกวัตถุดิบอย่างน้อย 1 รายการ', 'error');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await addDoc(collection(db, 'recipes'), {
+        name: recipeName.trim(),
+        description: recipeDescription.trim(),
+        isPublic: isPublic,
+        items: selected.map((item) => ({
+          id: item.id,
+          name: item.name,
+          nameeng: item.nameeng || '',
+          category: item.category || '',
+          amount: item.amount,
+          nutrients: item.nutrients || {},
+        })),
+        totalNutrients: { ...totals },
+        createdBy: {
+          uid: user?.uid || '',
+          displayName: user?.displayName || user?.email || 'ไม่ระบุ',
+          role: role || 'user',
+        },
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      showToast('บันทึกสูตรสำเร็จ! 🎉', 'success');
+      setShowSaveModal(false);
+      setRecipeName('');
+      setRecipeDescription('');
+      setIsPublic(false);
+    } catch (e) {
+      console.error(e);
+      showToast('บันทึกสูตรไม่สำเร็จ', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // -----------------------------
+  // 9) JSX แสดงผล
   // -----------------------------
   return (
     <div className="card nutrition-panel">
@@ -383,7 +381,6 @@ const handleSaveRecipe = async () => {
               className="item-row"
               onClick={() => addItem(item)}
             >
-              {/* บล็อกชื่อไทย+อังกฤษ จัดให้อยู่ซ้ายตรงกัน */}
               <div className="item-main">
                 <div className="item-name">{item.name}</div>
                 {item.nameeng && (
@@ -391,12 +388,10 @@ const handleSaveRecipe = async () => {
                 )}
               </div>
 
-              {/* หมวด แสดงเป็น pill ด้านขวา */}
               <div className="item-category-pill">
                 {item.category || 'ไม่มีหมวดหมู่กำหนด'}
               </div>
 
-              {/* ปุ่มเพิ่มเล็ก ๆ */}
               <div className="item-add">เพิ่ม</div>
             </button>
           ))}
@@ -407,72 +402,72 @@ const handleSaveRecipe = async () => {
             </div>
           )}
 
-        {/* แถบเปลี่ยนหน้า (pagination) */}
-{filteredItems.length > pageSize && (
-  <div
-    style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginTop: '8px',
-      fontSize: '0.8rem',
-    }}
-  >
-    <button
-      type="button"
-      onClick={goPrev}
-      disabled={page === 1}
-      className="pagination-btn"
-    >
-      ◀ ก่อนหน้า
-    </button>
-    <span>หน้า {page} / {totalPages}</span>
-    <button
-      type="button"
-      onClick={goNext}
-      disabled={page === totalPages}
-      className="pagination-btn"
-    >
-      ถัดไป ▶
-    </button>
-  </div>
-)}
-</div>
+          {filteredItems.length > pageSize && (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginTop: '8px',
+                fontSize: '0.8rem',
+              }}
+            >
+              <button
+                type="button"
+                onClick={goPrev}
+                disabled={page === 1}
+                className="pagination-btn"
+              >
+                ◀ ก่อนหน้า
+              </button>
+              <span>หน้า {page} / {totalPages}</span>
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={page === totalPages}
+                className="pagination-btn"
+              >
+                ถัดไป ▶
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* ขวา: รายการที่เลือก + ผลรวม */}
         <div>
           <h3 style={{ marginTop: 0 }}>รายการที่เลือกไว้</h3>
 
           <div className="selected-list">
-          {selected.map((item, index) => (
-            <div key={`${item.id}-${index}`} className="selected-row">
-              <div className="selected-name">
-                <strong>{item.name}</strong>{' '}
-                {item.nameeng && (
-                  <span className="item-nameeng">
-                    {item.nameeng}
+            {selected.map((item, index) => (
+              <div key={`${item.id}-${index}`} className="selected-row">
+                <div className="selected-name">
+                  <strong>{item.name}</strong>{' '}
+                  {item.nameeng && (
+                    <span className="item-nameeng">
+                      {item.nameeng}
+                    </span>
+                  )}{' '}
+                  <span className="item-meta">
+                    ({item.category || 'ไม่มีหมวดหมู่'})
                   </span>
-                )}{' '}
-                <span className="item-meta">
-                  ({item.category || 'ไม่มีหมวดหมู่'})
-                </span>
+                </div>
+                <input
+                  type="number"
+                  min="0"
+                  value={item.amount}
+                  onChange={(e) =>
+                    updateAmount(index, e.target.value)
+                  }
+                  style={{ width: 80 }}
+                />
+                <span className="item-meta">กรัม</span>
+                <button type="button" onClick={() => removeItem(index)}>
+                  ลบ
+                </button>
               </div>
-              <input
-                type="number"
-                min="0"
-                value={item.amount}
-                onChange={(e) =>
-                  updateAmount(index, e.target.value)
-                }
-                style={{ width: 80 }}
-              />
-              <span className="item-meta">กรัม</span>
-              <button type="button" onClick={() => removeItem(index)}>
-                ลบ
-              </button>
-            </div>
-          ))}
-     </div>
-          {/* ผลรวมแบบแยก 3 กลุ่ม */}
+            ))}
+          </div>
+
           <h3 style={{ marginTop: 16 }}>ผลรวมคุณค่าทางโภชนาการ</h3>
           <p className="muted">
             ปรับปริมาณกรัมของแต่ละวัตถุดิบด้านบน ผลรวมจะอัพเดตอัตโนมัติ
@@ -494,109 +489,105 @@ const handleSaveRecipe = async () => {
             </div>
           ))}
 
-          <button
-            className="primary-btn"
-            type="button"
-            onClick={handleExport}
-          >
-            Export เป็น Excel
-          </button>
-          
-          {/* ปุ่มบันทึกสูตร */}
-<button
-  className="save-recipe-btn"
-  type="button"
-  onClick={() => setShowSaveModal(true)}
-  disabled={selected.length === 0}
->
-  💾 บันทึกสูตร
-</button>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '16px' }}>
+            <button
+              className="primary-btn"
+              type="button"
+              onClick={handleExport}
+            >
+              Export เป็น Excel
+            </button>
+
+            <button
+              className="save-recipe-btn"
+              type="button"
+              onClick={() => setShowSaveModal(true)}
+              disabled={selected.length === 0}
+            >
+              💾 บันทึกสูตร
+            </button>
+          </div>
         </div>
       </div>
+
       {/* Modal บันทึกสูตร */}
-{showSaveModal && (
-  <div className="modal-overlay" onClick={() => setShowSaveModal(false)}>
-    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-      <div className="modal-header">
-        <h3>💾 บันทึกสูตรอาหาร</h3>
-        <button
-          type="button"
-          onClick={() => setShowSaveModal(false)}
-          className="modal-close"
-        >
-          ✕
-        </button>
-      </div>
+      {showSaveModal && (
+        <div className="modal-overlay" onClick={() => setShowSaveModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>💾 บันทึกสูตรอาหาร</h3>
+              <button
+                type="button"
+                onClick={() => setShowSaveModal(false)}
+                className="modal-close"
+              >
+                ✕
+              </button>
+            </div>
 
-      <div className="modal-body">
-        <label>
-          ชื่อสูตร *
-          <input
-            type="text"
-            value={recipeName}
-            onChange={(e) => setRecipeName(e.target.value)}
-            placeholder="เช่น ก๋วยเตี๋ยวสุโขทัยเสริมโปรตีน"
-          />
-        </label>
+            <div className="modal-body">
+              <label>
+                ชื่อสูตร *
+                <input
+                  type="text"
+                  value={recipeName}
+                  onChange={(e) => setRecipeName(e.target.value)}
+                  placeholder="เช่น ก๋วยเตี๋ยวสุโขทัยเสริมโปรตีน"
+                />
+              </label>
 
-        <label>
-          รายละเอียด (ถ้ามี)
-          <textarea
-            value={recipeDescription}
-            onChange={(e) => setRecipeDescription(e.target.value)}
-            placeholder="เช่น สูตรทดลองครั้งที่ 1"
-            rows={3}
-          />
-        </label>
+              <label>
+                รายละเอียด (ถ้ามี)
+                <textarea
+                  value={recipeDescription}
+                  onChange={(e) => setRecipeDescription(e.target.value)}
+                  placeholder="เช่น สูตรทดลองครั้งที่ 1"
+                  rows={3}
+                />
+              </label>
 
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            checked={isPublic}
-            onChange={(e) => setIsPublic(e.target.checked)}
-          />
-          <span>🌐 แชร์เป็นสาธารณะ (ให้คนอื่นเห็นและใช้ได้)</span>
-        </label>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={isPublic}
+                  onChange={(e) => setIsPublic(e.target.checked)}
+                />
+                <span>🌐 แชร์เป็นสาธารณะ (ให้คนอื่นเห็นและใช้ได้)</span>
+              </label>
 
-        <div className="recipe-preview">
-          <h4>รายการวัตถุดิบ ({selected.length} รายการ)</h4>
-          <ul>
-            {selected.slice(0, 5).map((item, i) => (
-              <li key={i}>{item.name} - {item.amount} กรัม</li>
-            ))}
-            {selected.length > 5 && <li>...และอีก {selected.length - 5} รายการ</li>}
-          </ul>
+              <div className="recipe-preview">
+                <h4>รายการวัตถุดิบ ({selected.length} รายการ)</h4>
+                <ul>
+                  {selected.slice(0, 5).map((item, i) => (
+                    <li key={i}>{item.name} - {item.amount} กรัม</li>
+                  ))}
+                  {selected.length > 5 && <li>...และอีก {selected.length - 5} รายการ</li>}
+                </ul>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  onClick={() => setShowSaveModal(false)}
+                  className="cancel-btn"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveRecipe}
+                  disabled={saving}
+                  className="primary-btn"
+                >
+                  {saving ? 'กำลังบันทึก...' : 'บันทึกสูตร'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div className="modal-footer">
-          <button
-            type="button"
-            onClick={() => setShowSaveModal(false)}
-            className="cancel-btn"
-          >
-            ยกเลิก
-          </button>
-          <button
-            type="button"
-            onClick={handleSaveRecipe}
-            disabled={saving}
-            className="primary-btn"
-          >
-            {saving ? 'กำลังบันทึก...' : 'บันทึกสูตร'}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </div>
   );
 };
 
 export default NutritionCalculator;
-
-
-
-
-
-
