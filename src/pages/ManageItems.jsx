@@ -561,24 +561,23 @@ const ManageItems = () => {
 
       <h3 style={{ marginTop: 12 }}>📚 รายการทั้งหมด</h3>
       <div className="item-list">
-        {filteredItems.map((item) => (
-          <div key={item.id} className="item-row">
-            <div className="item-name">{item.name}</div>
-            <div className="item-nameeng">{item.nameeng}</div>
-            <div className="item-meta">
-              {item.category || 'ไม่มีหมวดหมู่'}{' '}
-              {item.description ? `• ${item.description}` : ''}
-            </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button type="button" onClick={() => startEdit(item)}>
-                แก้ไข
-              </button>
-              <button type="button" onClick={() => handleDelete(item)}>
-                ลบ
-              </button>
-            </div>
-          </div>
-        ))}
+       {filteredItems.map((item) => (
+  <div key={item.id} className="manage-item-row">
+    <div className="manage-item-name">{item.name}</div>
+    <div className="manage-item-nameeng">{item.nameeng || '-'}</div>
+    <div className="manage-item-category">
+      {item.category || 'ไม่มีหมวด'}
+    </div>
+    <div className="manage-item-actions">
+      <button type="button" onClick={() => startEdit(item)}>
+        แก้ไข
+      </button>
+      <button type="button" onClick={() => handleDelete(item)}>
+        ลบ
+      </button>
+    </div>
+  </div>
+))}
         {!filteredItems.length && (
           <div style={{ padding: '8px 10px', fontSize: '0.85rem' }}>
             ไม่มีข้อมูล
@@ -590,4 +589,5 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
+
 
