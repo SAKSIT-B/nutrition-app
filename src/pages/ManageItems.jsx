@@ -267,6 +267,14 @@ const ManageItems = () => {
                   onChange={(e) => handleNutrientChange('carb', e.target.value)}
                 />
               </label>
+               <label>
+                Dieraty fibre (Crud fibre) [g]
+                <input
+                  type="number"
+                  value={form.nutrients.fibre}
+                  onChange={(e) => handleNutrientChange('fibre', e.target.value)}
+                />
+              </label>
               <label>
                 Ash [g]
                 <input
@@ -345,7 +353,7 @@ const ManageItems = () => {
               <label>
                 Copper [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.copper}
                   onChange={(e) =>
                     handleNutrientChange('copper', e.target.value)
@@ -382,7 +390,7 @@ const ManageItems = () => {
               <label>
                 Betacarotene [µg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.betacarotene}
                   onChange={(e) =>
                     handleNutrientChange('betacarotene', e.target.value)
@@ -402,7 +410,7 @@ const ManageItems = () => {
               <label>
                 Total Vitamin A (RAE) [µg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.vitaminA}
                   onChange={(e) =>
                     handleNutrientChange('vitaminA', e.target.value)
@@ -422,7 +430,7 @@ const ManageItems = () => {
               <label>
                 Riboflavin [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.riboflavin}
                   onChange={(e) =>
                     handleNutrientChange('riboflavin', e.target.value)
@@ -442,7 +450,7 @@ const ManageItems = () => {
               <label>
                 Vitamin C [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.vitaminC}
                   onChange={(e) =>
                     handleNutrientChange('vitaminC', e.target.value)
@@ -452,7 +460,7 @@ const ManageItems = () => {
               <label>
                 Vitamin E [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.vitaminE}
                   onChange={(e) =>
                     handleNutrientChange('vitaminE', e.target.value)
@@ -481,7 +489,7 @@ const ManageItems = () => {
       <div className="search-row">
         <input
           type="search"
-          placeholder="ค้นหารายการทั้งหมดตามชื่อ / หมวด / หมายเหตุ..."
+          placeholder="ค้นหารายการทั้งหมดตามชื่อไทยและอังกฤษ / หมวด / หมายเหตุ..."
           value={searchAll}
           onChange={(e) => setSearchAll(e.target.value)}
           className="nutrition-search-input"
@@ -493,6 +501,7 @@ const ManageItems = () => {
         {filteredItems.map((item) => (
           <div key={item.id} className="item-row">
             <div className="item-name">{item.name}</div>
+            <div className="item-nameeng">{item.nameeng}</div>
             <div className="item-meta">
               {item.category || 'ไม่มีหมวดหมู่'}{' '}
               {item.description ? `• ${item.description}` : ''}
@@ -518,6 +527,7 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
+
 
 
 
