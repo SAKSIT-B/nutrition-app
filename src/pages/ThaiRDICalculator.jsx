@@ -35,12 +35,11 @@ const ThaiRDICalculator = () => {
   const [selected, setSelected] = useState([]);
   const [servingSize, setServingSize] = useState(100);
   const [servingsPerContainer, setServingsPerContainer] = useState(1);
-  const [labelType, setLabelType] = useState('full'); // 'full' หรือ 'gda'
+  const [labelType, setLabelType] = useState('full');
   const [exporting, setExporting] = useState(false);
   const { showToast } = useToast();
   const labelRef = useRef(null);
 
-  // โหลดข้อมูลจาก Firestore
   useEffect(() => {
     const load = async () => {
       try {
@@ -80,13 +79,11 @@ const ThaiRDICalculator = () => {
     );
   };
 
-  // คำนวณผลรวมสารอาหาร
   const totals = useMemo(() => {
     const result = {};
     Object.keys(THAI_RDI).forEach((key) => {
       result[key] = 0;
     });
-
     selected.forEach((item) => {
       const ratio = item.amount / 100;
       const nutrients = item.nutrients || {};
@@ -95,15 +92,12 @@ const ThaiRDICalculator = () => {
         result[key] += raw * ratio;
       });
     });
-
     return result;
   }, [selected]);
 
-  // คำนวณค่าต่อหนึ่งหน่วยบริโภค
   const perServing = useMemo(() => {
     const totalWeight = selected.reduce((sum, item) => sum + item.amount, 0);
     if (totalWeight === 0) return {};
-
     const ratio = servingSize / totalWeight;
     const result = {};
     Object.keys(totals).forEach((key) => {
@@ -112,7 +106,6 @@ const ThaiRDICalculator = () => {
     return result;
   }, [totals, servingSize, selected]);
 
-  // คำนวณ %Thai RDI
   const percentRDI = useMemo(() => {
     const result = {};
     Object.keys(THAI_RDI).forEach((key) => {
@@ -123,7 +116,6 @@ const ThaiRDICalculator = () => {
     return result;
   }, [perServing]);
 
-  // ค้นหา
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return items;
@@ -136,22 +128,18 @@ const ThaiRDICalculator = () => {
 
   const totalWeight = selected.reduce((sum, item) => sum + item.amount, 0);
 
-  // Export เป็นรูปภาพ
   const handleExport = async (format) => {
     if (!labelRef.current) return;
-
     setExporting(true);
     try {
       const canvas = await html2canvas(labelRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2, // ความละเอียดสูงขึ้น
+        scale: 2,
       });
-
       const link = document.createElement('a');
       link.download = `nutrition-label.${format}`;
       link.href = canvas.toDataURL(`image/${format === 'jpg' ? 'jpeg' : 'png'}`);
       link.click();
-
       showToast(`บันทึกเป็น ${format.toUpperCase()} สำเร็จ`, 'success');
     } catch (e) {
       console.error(e);
@@ -169,7 +157,7 @@ const ThaiRDICalculator = () => {
       </p>
 
       <div className="rdi-calculator-layout">
-        {/* ฝั่งซ้าย: เลือกวัตถุดิบ */}
+        {/* ฝั่งซ้าย */}
         <div className="rdi-left-panel">
           <h3>เลือกวัตถุดิบ / เมนู</h3>
           <div className="search-row">
@@ -201,7 +189,6 @@ const ThaiRDICalculator = () => {
             ))}
           </div>
 
-          {/* รายการที่เลือก */}
           <h4 style={{ marginTop: '16px' }}>รายการที่เลือก</h4>
           {selected.length === 0 ? (
             <p className="muted">ยังไม่ได้เลือกวัตถุดิบ</p>
@@ -226,7 +213,6 @@ const ThaiRDICalculator = () => {
             ))
           )}
 
-          {/* ตั้งค่าหน่วยบริโภค */}
           <div className="serving-settings">
             <h4>ตั้งค่าหน่วยบริโภค</h4>
             <div className="serving-row">
@@ -258,7 +244,6 @@ const ThaiRDICalculator = () => {
             <p className="muted">น้ำหนักรวมทั้งหมด: {totalWeight} กรัม</p>
           </div>
 
-          {/* เลือกรูปแบบฉลาก */}
           <div className="label-type-toggle">
             <h4>รูปแบบฉลาก</h4>
             <div className="toggle-buttons">
@@ -279,7 +264,6 @@ const ThaiRDICalculator = () => {
             </div>
           </div>
 
-          {/* ปุ่ม Export */}
           <div className="export-buttons">
             <h4>บันทึกเป็นรูปภาพ</h4>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -307,7 +291,6 @@ const ThaiRDICalculator = () => {
         <div className="rdi-right-panel">
           <div ref={labelRef}>
             {labelType === 'full' ? (
-              /* ฉลากแบบเต็ม */
               <div className="nutrition-label">
                 <div className="label-header">
                   <div className="label-title">ข้อมูลโภชนาการ</div>
@@ -429,59 +412,54 @@ const ThaiRDICalculator = () => {
                 </div>
               </div>
             ) : (
-{/* ฉลากแบบ GDA */}
-<div className="gda-label">
-  <div className="gda-header">
-    <div>คุณค่าทางโภชนาการต่อ <strong>{servingSize}</strong> กรัม</div>
-    <div>ควรแบ่งกิน <strong>{servingsPerContainer}</strong> ครั้ง</div>
-  </div>
+              <div className="gda-label">
+                <div className="gda-header">
+                  <div>คุณค่าทางโภชนาการต่อ <strong>{servingSize}</strong> กรัม</div>
+                  <div>ควรแบ่งกิน <strong>{servingsPerContainer}</strong> ครั้ง</div>
+                </div>
 
-  <div className="gda-boxes">
-    {/* พลังงาน */}
-    <div className="gda-box">
-      <div className="gda-box-header">พลังงาน</div>
-      <div className="gda-box-value">
-        <div className="gda-box-number">{perServing.energy || 0}</div>
-        <div className="gda-box-unit">กิโลแคลอรี</div>
-      </div>
-      <div className="gda-box-percent">{percentRDI.energy || 0}%</div>
-    </div>
+                <div className="gda-boxes">
+                  <div className="gda-box">
+                    <div className="gda-box-header">พลังงาน</div>
+                    <div className="gda-box-value">
+                      <div className="gda-box-number">{perServing.energy || 0}</div>
+                      <div className="gda-box-unit">กิโลแคลอรี</div>
+                    </div>
+                    <div className="gda-box-percent">{percentRDI.energy || 0}%</div>
+                  </div>
 
-    {/* น้ำตาล */}
-    <div className="gda-box">
-      <div className="gda-box-header">น้ำตาล</div>
-      <div className="gda-box-value">
-        <div className="gda-box-number">{perServing.sugar || 0}</div>
-        <div className="gda-box-unit">กรัม</div>
-      </div>
-      <div className="gda-box-percent">{percentRDI.sugar || 0}%</div>
-    </div>
+                  <div className="gda-box">
+                    <div className="gda-box-header">น้ำตาล</div>
+                    <div className="gda-box-value">
+                      <div className="gda-box-number">{perServing.sugar || 0}</div>
+                      <div className="gda-box-unit">กรัม</div>
+                    </div>
+                    <div className="gda-box-percent">{percentRDI.sugar || 0}%</div>
+                  </div>
 
-    {/* ไขมัน */}
-    <div className="gda-box">
-      <div className="gda-box-header">ไขมัน</div>
-      <div className="gda-box-value">
-        <div className="gda-box-number">{perServing.fat || 0}</div>
-        <div className="gda-box-unit">กรัม</div>
-      </div>
-      <div className="gda-box-percent">{percentRDI.fat || 0}%</div>
-    </div>
+                  <div className="gda-box">
+                    <div className="gda-box-header">ไขมัน</div>
+                    <div className="gda-box-value">
+                      <div className="gda-box-number">{perServing.fat || 0}</div>
+                      <div className="gda-box-unit">กรัม</div>
+                    </div>
+                    <div className="gda-box-percent">{percentRDI.fat || 0}%</div>
+                  </div>
 
-    {/* โซเดียม */}
-    <div className="gda-box">
-      <div className="gda-box-header">โซเดียม</div>
-      <div className="gda-box-value">
-        <div className="gda-box-number">{perServing.sodium || 0}</div>
-        <div className="gda-box-unit">มิลลิกรัม</div>
-      </div>
-      <div className="gda-box-percent">{percentRDI.sodium || 0}%</div>
-    </div>
-  </div>
+                  <div className="gda-box">
+                    <div className="gda-box-header">โซเดียม</div>
+                    <div className="gda-box-value">
+                      <div className="gda-box-number">{perServing.sodium || 0}</div>
+                      <div className="gda-box-unit">มิลลิกรัม</div>
+                    </div>
+                    <div className="gda-box-percent">{percentRDI.sodium || 0}%</div>
+                  </div>
+                </div>
 
-  <div className="gda-footer">
-    คิดเป็นร้อยละของปริมาณสูงสุดที่ควรได้รับต่อวัน
-  </div>
-</div>
+                <div className="gda-footer">
+                  คิดเป็นร้อยละของปริมาณสูงสุดที่ควรได้รับต่อวัน
+                </div>
+              </div>
             )}
           </div>
         </div>
