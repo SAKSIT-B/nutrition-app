@@ -2,12 +2,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   collection,
-  getDocs,
   deleteDoc,
   updateDoc,
   doc,
   query,
   orderBy,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,7 +43,7 @@ const RoleBadge = ({ role }) => {
 
 const SavedRecipes = () => {
   const [recipes, setRecipes] = useState([]);
-  const [activeTab, setActiveTab] = useState('my'); // 'my' หรือ 'public'
+  const [activeTab, setActiveTab] = useState('my');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [viewingRecipe, setViewingRecipe] = useState(null);
@@ -51,38 +51,38 @@ const SavedRecipes = () => {
   const { user, role } = useAuth();
   const { showToast } = useToast();
 
-  // โหลดสูตรทั้งหมด
-  const loadRecipes = async () => {
-    setLoading(true);
-    try {
-      const q = query(collection(db, 'recipes'), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
-      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setRecipes(docs);
-    } catch (e) {
-      console.error(e);
-      showToast('โหลดสูตรอาหารไม่สำเร็จ', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // -----------------------------
+  // โหลดสูตรแบบ Realtime
+  // -----------------------------
   useEffect(() => {
-    loadRecipes();
-  }, []);
+    const q = query(collection(db, 'recipes'), orderBy('createdAt', 'desc'));
+    
+    const unsubscribe = onSnapshot(q,
+      (snapshot) => {
+        const docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setRecipes(docs);
+        setLoading(false);
+      },
+      (error) => {
+        console.error(error);
+        showToast('โหลดสูตรอาหารไม่สำเร็จ', 'error');
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [showToast]);
 
   // กรองสูตร
   const filteredRecipes = useMemo(() => {
     let result = recipes;
 
-    // กรองตาม tab
     if (activeTab === 'my') {
       result = result.filter((r) => r.createdBy?.uid === user?.uid);
     } else {
       result = result.filter((r) => r.isPublic === true);
     }
 
-    // กรองตามคำค้นหา
     const q = search.trim().toLowerCase();
     if (q) {
       result = result.filter(
@@ -102,7 +102,6 @@ const SavedRecipes = () => {
     try {
       await deleteDoc(doc(db, 'recipes', recipe.id));
       showToast('ลบสูตรสำเร็จ', 'success');
-      loadRecipes();
     } catch (e) {
       console.error(e);
       showToast('ลบสูตรไม่สำเร็จ', 'error');
@@ -119,7 +118,6 @@ const SavedRecipes = () => {
         recipe.isPublic ? 'เปลี่ยนเป็นส่วนตัวแล้ว' : 'เปลี่ยนเป็นสาธารณะแล้ว',
         'success'
       );
-      loadRecipes();
     } catch (e) {
       console.error(e);
       showToast('เปลี่ยนสถานะไม่สำเร็จ', 'error');
@@ -132,7 +130,6 @@ const SavedRecipes = () => {
     const amountRow = ['ปริมาณ (กรัม)', ...recipe.items.map((s) => s.amount)];
     const rows = [header, amountRow];
 
-    // เพิ่มข้อมูลสารอาหาร
     if (recipe.totalNutrients) {
       Object.entries(recipe.totalNutrients).forEach(([key, value]) => {
         rows.push([key, value]);
@@ -166,7 +163,7 @@ const SavedRecipes = () => {
   return (
     <div className="card">
       <h2 className="page-title">📖 สูตรอาหาร</h2>
-      <p className="card-subtitle">บันทึกและจัดการสูตรอาหารของคุณ</p>
+      <p className="card-subtitle">บันทึกและจัดการสูตรอาหารของคุณ (อัพเดทแบบ Realtime)</p>
 
       {/* Tabs */}
       <div className="recipe-tabs">
@@ -284,7 +281,7 @@ const SavedRecipes = () => {
         <div className="modal-overlay" onClick={() => setViewingRecipe(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>ชื่อ: {viewingRecipe.name}</h3>
+              <h3>ชื่อสูตร: {viewingRecipe.name}</h3>
               <button
                 type="button"
                 onClick={() => setViewingRecipe(null)}
