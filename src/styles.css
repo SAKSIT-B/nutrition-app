@@ -1132,101 +1132,95 @@ body.theme-dark .nutrition-label {
 }
 
 /* ===========================
-   ฉลาก GDA (แบบย่อ)
+   ฉลาก GDA (แบบมาตรฐาน อย.)
    =========================== */
 .gda-label {
   width: 100%;
-  max-width: 400px;
-  padding: 16px;
+  max-width: 420px;
+  padding: 16px 20px;
   background: #fff;
   border: 2px solid #000;
-  border-radius: 12px;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Sarabun', 'Arial', sans-serif;
   color: #000;
 }
 
 .gda-header {
   text-align: center;
   margin-bottom: 12px;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
-.gda-title {
-  font-size: 0.9rem;
+.gda-header strong {
   font-weight: bold;
 }
 
-.gda-circles {
+.gda-boxes {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 0;
+  border: 2px solid #000;
 }
 
-.gda-circle {
-  width: 80px;
-  height: 80px;
-  border: 3px solid #2563eb;
-  border-radius: 50%;
+.gda-box {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  background: #eff6ff;
+  text-align: center;
+  border-right: 2px solid #000;
 }
 
-.gda-circle.warning {
-  border-color: #dc2626;
-  background: #fef2f2;
+.gda-box:last-child {
+  border-right: none;
 }
 
-.gda-value {
-  font-size: 1.1rem;
+.gda-box-header {
+  background: #000;
+  color: #fff;
+  font-size: 0.85rem;
   font-weight: bold;
-  line-height: 1;
+  padding: 6px 4px;
 }
 
-.gda-unit {
-  font-size: 0.6rem;
-  color: #666;
+.gda-box-value {
+  padding: 8px 4px;
+  border-bottom: 1px solid #000;
 }
 
-.gda-label-text {
-  font-size: 0.65rem;
-  font-weight: 600;
-  margin-top: 2px;
+.gda-box-number {
+  font-size: 1.3rem;
+  font-weight: bold;
+  line-height: 1.2;
 }
 
-.gda-percent {
+.gda-box-unit {
   font-size: 0.7rem;
-  font-weight: bold;
   color: #333;
+}
+
+.gda-box-percent {
+  padding: 6px 4px;
+  font-size: 1rem;
+  font-weight: bold;
 }
 
 .gda-footer {
   text-align: center;
-  font-size: 0.7rem;
-  color: #555;
-  margin-top: 12px;
-  padding-top: 8px;
-  border-top: 1px solid #ddd;
+  font-size: 0.75rem;
+  color: #000;
+  margin-top: 10px;
+  padding-top: 6px;
 }
 
-.gda-message {
-  text-align: center;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #dc2626;
-  margin-top: 8px;
-  padding: 6px;
-  background: #fef2f2;
-  border-radius: 6px;
+.gda-footer::before {
+  content: "* ";
 }
 
 body.theme-dark .gda-label {
   background: #fff;
   color: #000;
 }
+
 
 
 
