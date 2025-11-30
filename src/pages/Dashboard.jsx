@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
@@ -15,47 +14,41 @@ const Dashboard = () => {
   return (
     <div className="layout">
       <Sidebar />
+
       <div className="layout-main">
         <Topbar />
+
         <div className="layout-content">
           <Routes>
-            {/* default → หน้าโภชนาการ */}
+
+            {/* default redirect */}
             <Route path="/" element={<Navigate to="nutrition" />} />
 
-            {/* ทุก role ที่ล็อกอินเข้าได้ */}
+            {/* หน้าใช้งานทั่วไป */}
             <Route path="nutrition" element={<NutritionCalculator />} />
 
-            {/* owner / admin / mod เท่านั้น */}
+            {/* หน้าเพิ่ม/แก้ไขข้อมูล — owner/admin/mod เข้าถึงได้ */}
             <Route
               path="manage-items"
               element={
-                <ProtectedRoute
-                  allowRoles={['owner', 'admin', 'mod']}
-                  allowedRoles={['owner', 'admin', 'mod']}
-                >
+                <ProtectedRoute allowedRoles={['owner', 'admin', 'mod']}>
                   <ManageItems />
                 </ProtectedRoute>
               }
             />
 
-            {/* owner / admin เท่านั้น */}
+            {/* หน้าแอดมิน — owner/admin เท่านั้น */}
             <Route
               path="admin"
               element={
-                <ProtectedRoute
-                  allowRoles={['owner', 'admin']}
-                  allowedRoles={['owner', 'admin']}
-                >
+                <ProtectedRoute allowedRoles={['owner', 'admin']}>
                   <AdminConsole />
                 </ProtectedRoute>
               }
             />
 
-            {/* route อื่น ๆ ที่ไม่ตรง */}
-            <Route
-              path="*"
-              element={<div>ไม่พบหน้านี้ (role: {role || 'ไม่ทราบสิทธิ์'})</div>}
-            />
+            <Route path="*" element={<div>ไม่พบหน้านี้ (role: {role})</div>} />
+
           </Routes>
         </div>
       </div>
