@@ -842,6 +842,75 @@ body.theme-dark .pagination-btn:hover:not(:disabled) {
   background: #2563eb;
 }
 
+/* ===========================
+   รายการทั้งหมด ในหน้า ManageItems
+   =========================== */
+.manage-item-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 150px auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  transition: background 0.15s ease;
+}
+
+.manage-item-row:hover {
+  background: var(--primary-soft);
+}
+
+.manage-item-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.manage-item-nameeng {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.manage-item-category {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.manage-item-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+/* Responsive: จอเล็กให้เรียงเป็น 2 แถว */
+@media (max-width: 768px) {
+  .manage-item-row {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+  }
+  
+  .manage-item-name {
+    grid-column: 1;
+  }
+  
+  .manage-item-actions {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-items: center;
+  }
+  
+  .manage-item-nameeng,
+  .manage-item-category {
+    grid-column: 1;
+    font-size: 0.8rem;
+  }
+}
 
 
 
