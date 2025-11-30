@@ -193,6 +193,77 @@ body {
   gap: 4px;
 }
 
+/* Layout ใหม่แบบสองฝั่งสำหรับหน้า Login/Register/Forgot */
+
+.auth-layout {
+  max-width: 960px;
+  margin: 40px auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: center;
+}
+
+/* ฝั่งซ้าย: ข้อมูล Nutrition App */
+.auth-left {
+  padding: 16px 8px;
+}
+
+.auth-app-name {
+  font-size: 1.8rem;
+  margin: 0 0 8px;
+}
+
+.auth-app-desc {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.auth-app-points {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* ฝั่งขวา: ฟอร์ม */
+.auth-right {
+  display: flex;
+  justify-content: center;
+}
+
+.auth-logo-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.auth-logo-row img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* จอเล็กให้เรียงจากบนลงล่าง */
+@media (max-width: 900px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+
+  .auth-left {
+    text-align: center;
+  }
+
+  .auth-app-points {
+    text-align: left;
+    display: inline-block;
+  }
+}
+
+
 input,
 select,
 button {
@@ -722,6 +793,7 @@ body.theme-dark .item-nameeng {
   padding: 4px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
 }
+
 
 
 
