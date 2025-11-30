@@ -16,11 +16,13 @@ const Sidebar = () => {
           <img src={logo2} alt="โลโก้ 2" />
           <img src={logo3} alt="โลโก้ 3" />
         </div>
-      <div className="sidebar-header">
-        <h2>Nutrition App</h2>
-        <p className="sidebar-subtitle">การคำนวณคุณค่าทางโภชนาการ</p>
+        <div className="sidebar-header">
+          <h2>Nutrition App</h2>
+          <p className="sidebar-subtitle">
+            การคำนวณคุณค่าทางโภชนาการ
+          </p>
+        </div>
       </div>
-
       <nav className="sidebar-nav">
         <NavLink
           to="/dashboard/nutrition"
@@ -58,3 +60,4 @@ const Sidebar = () => {
 }
 
 export default Sidebar
+
