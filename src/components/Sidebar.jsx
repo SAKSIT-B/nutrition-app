@@ -1,3 +1,4 @@
+// src/components/Sidebar.jsx
 import React from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -33,6 +34,16 @@ const Sidebar = () => {
           การคำนวณโภชนาการ
         </NavLink>
 
+        {/* เพิ่มเมนูใหม่ตรงนี้ */}
+        <NavLink
+          to="/dashboard/thai-rdi"
+          className={({ isActive }) =>
+            'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
+          }
+        >
+          ฉลากโภชนาการ (Thai RDI)
+        </NavLink>
+
         {(role === 'admin' || role === 'owner' || role === 'mod') && (
           <NavLink
             to="/dashboard/manage-items"
@@ -60,5 +71,3 @@ const Sidebar = () => {
 }
 
 export default Sidebar
-
-
