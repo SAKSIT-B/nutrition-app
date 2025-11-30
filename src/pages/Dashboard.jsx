@@ -24,7 +24,7 @@ const Dashboard = () => {
             <Route
               path="manage-items"
               element={
-                <ProtectedRoute allowRoles={['admin', 'mod']}>
+                <ProtectedRoute allowRoles={['owner','admin', 'mod']}>
                   <ManageItems />
                 </ProtectedRoute>
               }
@@ -33,7 +33,7 @@ const Dashboard = () => {
             <Route
               path="admin"
               element={
-                <ProtectedRoute allowRoles={['admin']}>
+                <ProtectedRoute allowedRoles={['owner', 'admin']}>
                   <AdminConsole />
                 </ProtectedRoute>
               }
@@ -48,3 +48,4 @@ const Dashboard = () => {
 }
 
 export default Dashboard
+
