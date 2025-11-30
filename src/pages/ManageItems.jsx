@@ -72,6 +72,7 @@ const ManageItems = () => {
     setEditingId(item.id);
     setForm({
       name: item.name || '',
+      nameeng: item.nameeng || '',
       description: item.description || '',
       category: item.category || '',
       nutrients: { ...EMPTY_NUTRIENTS, ...(item.nutrients || {}) },
@@ -82,6 +83,7 @@ const ManageItems = () => {
     setEditingId(null);
     setForm({
       name: '',
+      nameeng: '',
       description: '',
       category: '',
       nutrients: { ...EMPTY_NUTRIENTS },
@@ -143,6 +145,7 @@ const ManageItems = () => {
     if (!q) return items;
     return items.filter((item) => {
       const name = (item.name || '').toLowerCase();
+      const nameeng = (item.nameeng || '').toLowerCase();
       const cat = (item.category || '').toLowerCase();
       const desc = (item.description || '').toLowerCase();
       return name.includes(q) || cat.includes(q) || desc.includes(q);
@@ -166,17 +169,13 @@ const ManageItems = () => {
               value={form.name}
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="เช่น ก๋วยเตี๋ยว เส้นจันทน์ แห้ง"
-              type="text2"
-              value={form.nameeng}
-              onChange={(e) => handleChange('nameeng', e.target.value)}
-              placeholder="ex. Noodle, rice, small size strip, dried "
             />
           </label>
         </div>
 
         <div className="form-row">
           <label>
-            Ingredient (แสดงในตัวคำนวณ)
+            ชื่อวัตถุดิบ / เมนู (ภาษาอังกฤษ)
             <input
               type="text"
               value={form.nameeng}
@@ -519,5 +518,6 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
+
 
 
