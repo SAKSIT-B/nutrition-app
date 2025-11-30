@@ -5,6 +5,8 @@ import { db } from '../firebase';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import { useToast } from '../contexts/ToastContext';
+import { collection, getDocs, query, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
 
 // กลุ่มสารอาหารที่ใช้ทั้งสำหรับแสดงผลรวม และ export Excel
 const NUTRIENT_GROUPS = [
@@ -66,6 +68,12 @@ const NutritionCalculator = () => {
   const [pageSize, setPageSize] = useState(15);      // จำนวนรายการต่อหน้า
 
   const { showToast } = useToast();
+  const { user, role } = useAuth();
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [recipeName, setRecipeName] = useState('');
+  const [recipeDescription, setRecipeDescription] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // -----------------------------
   // 1) โหลดข้อมูลจาก Firestore (เรียงตามชื่อ name)
@@ -202,7 +210,7 @@ const NutritionCalculator = () => {
   // -----------------------------
   const handleExport = () => {
     if (!selected.length) {
-      showToast('ยังไม่มีรายการที่เลือก', 'error');
+      ('ยังไม่มีรายการที่เลือก', 'error');
       return;
     }
 
@@ -234,9 +242,59 @@ const NutritionCalculator = () => {
       new Blob([wbout], { type: 'application/octet-stream' }),
       'nutrition.xlsx',
     );
-    showToast('Export Excel สำเร็จ', 'success');
+    ('Export Excel สำเร็จ', 'success');
   };
 
+// -----------------------------
+// 9) บันทึกสูตรอาหาร
+// -----------------------------
+const handleSaveRecipe = async () => {
+  if (!recipeName.trim()) {
+    showToast('กรุณาตั้งชื่อสูตร', 'error');
+    return;
+  }
+  if (selected.length === 0) {
+    showToast('กรุณาเลือกวัตถุดิบอย่างน้อย 1 รายการ', 'error');
+    return;
+  }
+
+  setSaving(true);
+  try {
+    await addDoc(collection(db, 'recipes'), {
+      name: recipeName.trim(),
+      description: recipeDescription.trim(),
+      isPublic: isPublic,
+      items: selected.map((item) => ({
+        id: item.id,
+        name: item.name,
+        nameeng: item.nameeng || '',
+        category: item.category || '',
+        amount: item.amount,
+        nutrients: item.nutrients || {},
+      })),
+      totalNutrients: { ...totals },
+      createdBy: {
+        uid: user?.uid || '',
+        displayName: user?.displayName || user?.email || 'ไม่ระบุ',
+        role: role || 'user',
+      },
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    showToast('บันทึกสูตรสำเร็จ! 🎉', 'success');
+    setShowSaveModal(false);
+    setRecipeName('');
+    setRecipeDescription('');
+    setIsPublic(false);
+  } catch (e) {
+    console.error(e);
+    showToast('บันทึกสูตรไม่สำเร็จ', 'error');
+  } finally {
+    setSaving(false);
+  }
+};
+  
   // -----------------------------
   // 8) JSX แสดงผล
   // -----------------------------
@@ -444,13 +502,100 @@ const NutritionCalculator = () => {
           >
             Export เป็น Excel
           </button>
+          
+          {/* ปุ่มบันทึกสูตร */}
+<button
+  className="save-recipe-btn"
+  type="button"
+  onClick={() => setShowSaveModal(true)}
+  disabled={selected.length === 0}
+>
+  💾 บันทึกสูตร
+</button>
         </div>
       </div>
+      {/* Modal บันทึกสูตร */}
+{showSaveModal && (
+  <div className="modal-overlay" onClick={() => setShowSaveModal(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-header">
+        <h3>💾 บันทึกสูตรอาหาร</h3>
+        <button
+          type="button"
+          onClick={() => setShowSaveModal(false)}
+          className="modal-close"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="modal-body">
+        <label>
+          ชื่อสูตร *
+          <input
+            type="text"
+            value={recipeName}
+            onChange={(e) => setRecipeName(e.target.value)}
+            placeholder="เช่น ก๋วยเตี๋ยวสุโขทัยเสริมโปรตีน"
+          />
+        </label>
+
+        <label>
+          รายละเอียด (ถ้ามี)
+          <textarea
+            value={recipeDescription}
+            onChange={(e) => setRecipeDescription(e.target.value)}
+            placeholder="เช่น สูตรทดลองครั้งที่ 1"
+            rows={3}
+          />
+        </label>
+
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={isPublic}
+            onChange={(e) => setIsPublic(e.target.checked)}
+          />
+          <span>🌐 แชร์เป็นสาธารณะ (ให้คนอื่นเห็นและใช้ได้)</span>
+        </label>
+
+        <div className="recipe-preview">
+          <h4>รายการวัตถุดิบ ({selected.length} รายการ)</h4>
+          <ul>
+            {selected.slice(0, 5).map((item, i) => (
+              <li key={i}>{item.name} - {item.amount} กรัม</li>
+            ))}
+            {selected.length > 5 && <li>...และอีก {selected.length - 5} รายการ</li>}
+          </ul>
+        </div>
+
+        <div className="modal-footer">
+          <button
+            type="button"
+            onClick={() => setShowSaveModal(false)}
+            className="cancel-btn"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="button"
+            onClick={handleSaveRecipe}
+            disabled={saving}
+            className="primary-btn"
+          >
+            {saving ? 'กำลังบันทึก...' : 'บันทึกสูตร'}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
 
 export default NutritionCalculator;
+
 
 
 
