@@ -364,11 +364,20 @@ button[disabled] {
   padding: 8px 10px;
   border-radius: 12px;
   text-align: left;
+
+  /* เพิ่มความลื่นตอน hover */
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
 }
 
 .item-row:hover {
   background: var(--primary-soft);
+  transform: translateY(-1px);              /* ลอยขึ้นนิดเดียว */
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08); /* เงาอ่อน ๆ ดูเป็นการ์ด */
 }
+
 
 .item-name {
   font-size: 0.95rem;
@@ -793,6 +802,7 @@ body.theme-dark .item-nameeng {
   padding: 4px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
 }
+
 
 
 
