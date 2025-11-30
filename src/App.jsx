@@ -16,14 +16,13 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route
-              path="/dashboard/admin"
-              element={
-                <ProtectedRoute allowedRoles={['owner', 'admin']}>
-                  <AdminConsole />
-                </ProtectedRoute>
-  }
-/>
-
+          path="/dashboard/*"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<div>ไม่พบหน้านี้</div>} />
       </Routes>
 
@@ -34,5 +33,3 @@ const App = () => {
 }
 
 export default App
-
-
