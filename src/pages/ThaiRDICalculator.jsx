@@ -190,11 +190,12 @@ const ThaiRDICalculator = () => {
           </div>
 
           <h4 style={{ marginTop: '16px' }}>รายการที่เลือก</h4>
-          {selected.length === 0 ? (
-            <p className="muted">ยังไม่ได้เลือกวัตถุดิบ</p>
-          ) : (
-            selected.map((item, index) => (
-              <div key={`${item.id}-${index}`} className="selected-row">
+         {selected.length === 0 ? (
+  <p className="muted">ยังไม่ได้เลือกวัตถุดิบ</p>
+) : (
+  <div className="selected-list">
+    {selected.map((item, index) => (
+      <div key={`${item.id}-${index}`} className="selected-row">
                 <div className="selected-name">
                   <strong>{item.name}</strong>
                 </div>
@@ -210,7 +211,8 @@ const ThaiRDICalculator = () => {
                   ลบ
                 </button>
               </div>
-            ))
+             ))}
+     </div>
           )}
 
           <div className="serving-settings">
