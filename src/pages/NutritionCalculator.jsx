@@ -47,6 +47,13 @@ const NUTRIENT_GROUPS = [
       { key: 'vitaminE', label: 'Vitamin E [mg]' },
     ],
   },
+  {
+    title: 'กลุ่มที่ 4 อื่น ๆ (Other)',
+    keys: [
+      { key: 'sugar', label: 'Sugar [g]' },
+      { key: 'cholessterol', label: 'Cholessterol [mg]' },
+    ],
+  },
 ];
 
 const NutritionCalculator = () => {
@@ -443,5 +450,6 @@ const NutritionCalculator = () => {
 };
 
 export default NutritionCalculator;
+
 
 
