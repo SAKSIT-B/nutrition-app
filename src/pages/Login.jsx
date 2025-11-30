@@ -69,7 +69,7 @@ const Login = () => {
   }
 
   return (
-   <div className="auth-page">
+  <div className="auth-page">
     <div className="auth-layout">
       {/* ฝั่งซ้าย: แนะนำ Nutrition App */}
       <section className="auth-left">
@@ -94,53 +94,59 @@ const Login = () => {
             <img src={logo2} alt="โลโก้ 2" />
             <img src={logo3} alt="โลโก้ 3" />
           </div>
-          
-        <h1 className="auth-title">เข้าสู่ระบบ</h1>
 
-        {error && <div className="auth-error">{error}</div>}
+          {/* ===== วางฟอร์มเดิมของหน้า Login ตรงนี้ ===== */}
+          {/* 
+            ให้ copy โค้ดเก่าที่อยู่ใน auth-card เดิม เช่น
+            <h1 className="auth-title">เข้าสู่ระบบ</h1>
+            <form ...> ... </form>
+            <div className="auth-links"> ... </div>
+          */}
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <label>
-            {/* เปลี่ยนข้อความให้สื่อว่าใส่ได้ทั้งสองแบบ */}
-            Username หรือ อีเมล
-            <input
-              type="text"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="กรอก Username หรืออีเมล"
-              required
-            />
-          </label>
+          <h1 className="auth-title">เข้าสู่ระบบ</h1>
 
-          <label>
-            รหัสผ่าน
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="กรอกรหัสผ่าน"
-              required
-            />
-          </label>
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <label>
+              Username หรือ อีเมล
+              <input
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="กรอก Username หรืออีเมล"
+                required
+              />
+            </label>
 
-          <button
-            type="submit"
-            className="auth-button"
-            disabled={loading}
-          >
-            {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
-          </button>
-        </form>
+            <label>
+              รหัสผ่าน
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="กรอกรหัสผ่าน"
+                required
+              />
+            </label>
 
-        <div className="auth-links">
-          <Link to="/forgot-password">ลืมรหัสผ่าน?</Link> ·{' '}
-          <Link to="/register">สมัครสมาชิก</Link>
+            <button type="submit" disabled={loading}>
+              {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+            </button>
+          </form>
+
+          <div className="auth-links">
+            <a href="#/forgot-password">ลืมรหัสผ่าน?</a> ·{' '}
+            <a href="#/register">สมัครสมาชิก</a>
+          </div>
+          {/* ===== จบฟอร์มเดิม ===== */}
         </div>
-      </div>
+      </section>
     </div>
-  )
+  </div>
+)
+
 }
 export default Login
+
 
 
 
