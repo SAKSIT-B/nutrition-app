@@ -148,7 +148,7 @@ const ManageItems = () => {
       const nameeng = (item.nameeng || '').toLowerCase();
       const cat = (item.category || '').toLowerCase();
       const desc = (item.description || '').toLowerCase();
-      return name.includes(q) || cat.includes(q) || desc.includes(q);
+      return name.includes(q) || nameeng.includes(q) || cat.includes(q) || desc.includes(q);
     });
   }, [items, searchAll]);
 
@@ -527,6 +527,7 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
+
 
 
 
