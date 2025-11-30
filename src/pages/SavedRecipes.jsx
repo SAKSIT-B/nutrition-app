@@ -284,7 +284,7 @@ const SavedRecipes = () => {
         <div className="modal-overlay" onClick={() => setViewingRecipe(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{viewingRecipe.name}</h3>
+              <h3>ชื่อ: {viewingRecipe.name}</h3>
               <button
                 type="button"
                 onClick={() => setViewingRecipe(null)}
@@ -296,7 +296,7 @@ const SavedRecipes = () => {
 
             <div className="modal-body">
               {viewingRecipe.description && (
-                <p className="recipe-description">คำอธิบาย:''{viewingRecipe.description}</p>
+                <p className="recipe-description">คำอธิบาย: {viewingRecipe.description}</p>
               )}
 
               <h4>วัตถุดิบ ({viewingRecipe.items?.length || 0} รายการ)</h4>
