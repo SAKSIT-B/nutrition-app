@@ -20,5 +20,8 @@
     "@vitejs/plugin-react": "^4.0.0",
     "gh-pages": "^6.0.0",
     "vite": "^7.0.0"
-  }
+  },
+  "dependencies": {
+  "html2canvas": "^1.4.1",
+}
 }
