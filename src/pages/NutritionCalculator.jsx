@@ -57,7 +57,7 @@ const NutritionCalculator = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const snap = await getDocs(collection(db, 'ingredients'));
+        const snap = await getDocs(collection(db, 'items'));
         const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         setItems(docs);
       } catch (e) {
@@ -262,3 +262,4 @@ const NutritionCalculator = () => {
 };
 
 export default NutritionCalculator;
+
