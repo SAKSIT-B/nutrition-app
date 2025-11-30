@@ -224,7 +224,7 @@ const ManageItems = () => {
               <label>
                 Energy [kcal]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.energy}
                   onChange={(e) =>
                     handleNutrientChange('energy', e.target.value)
@@ -234,7 +234,7 @@ const ManageItems = () => {
               <label>
                 Water [g]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.water}
                   onChange={(e) =>
                     handleNutrientChange('water', e.target.value)
@@ -244,7 +244,7 @@ const ManageItems = () => {
               <label>
                 Protein [g]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.protein}
                   onChange={(e) =>
                     handleNutrientChange('protein', e.target.value)
@@ -254,7 +254,7 @@ const ManageItems = () => {
               <label>
                 Fat [g]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.fat}
                   onChange={(e) => handleNutrientChange('fat', e.target.value)}
                 />
@@ -262,7 +262,7 @@ const ManageItems = () => {
               <label>
                 Carbohydrate total [g]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.carb}
                   onChange={(e) => handleNutrientChange('carb', e.target.value)}
                 />
@@ -270,7 +270,7 @@ const ManageItems = () => {
                <label>
                 Dieraty fibre (Crud fibre) [g]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.fibre}
                   onChange={(e) => handleNutrientChange('fibre', e.target.value)}
                 />
@@ -278,7 +278,7 @@ const ManageItems = () => {
               <label>
                 Ash [g]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.ash}
                   onChange={(e) => handleNutrientChange('ash', e.target.value)}
                 />
@@ -293,7 +293,7 @@ const ManageItems = () => {
               <label>
                 Calcium [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.calcium}
                   onChange={(e) =>
                     handleNutrientChange('calcium', e.target.value)
@@ -303,7 +303,7 @@ const ManageItems = () => {
               <label>
                 Phosphorus [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.phosphorus}
                   onChange={(e) =>
                     handleNutrientChange('phosphorus', e.target.value)
@@ -313,7 +313,7 @@ const ManageItems = () => {
               <label>
                 Magnesium [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.magnesium}
                   onChange={(e) =>
                     handleNutrientChange('magnesium', e.target.value)
@@ -323,7 +323,7 @@ const ManageItems = () => {
               <label>
                 Sodium [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.sodium}
                   onChange={(e) =>
                     handleNutrientChange('sodium', e.target.value)
@@ -333,7 +333,7 @@ const ManageItems = () => {
               <label>
                 Potassium [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.potassium}
                   onChange={(e) =>
                     handleNutrientChange('potassium', e.target.value)
@@ -343,7 +343,7 @@ const ManageItems = () => {
               <label>
                 Iron [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.iron}
                   onChange={(e) =>
                     handleNutrientChange('iron', e.target.value)
@@ -363,7 +363,7 @@ const ManageItems = () => {
               <label>
                 Zinc [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.zinc}
                   onChange={(e) =>
                     handleNutrientChange('zinc', e.target.value)
@@ -373,7 +373,7 @@ const ManageItems = () => {
               <label>
                 Iodine [µg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.iodine}
                   onChange={(e) =>
                     handleNutrientChange('iodine', e.target.value)
@@ -400,7 +400,7 @@ const ManageItems = () => {
               <label>
                 Retinol [µg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.retinol}
                   onChange={(e) =>
                     handleNutrientChange('retinol', e.target.value)
@@ -420,7 +420,7 @@ const ManageItems = () => {
               <label>
                 Thiamin [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.thiamin}
                   onChange={(e) =>
                     handleNutrientChange('thiamin', e.target.value)
@@ -440,7 +440,7 @@ const ManageItems = () => {
               <label>
                 Niacin [mg]
                 <input
-                  type="number"
+                  type="text"
                   value={form.nutrients.niacin}
                   onChange={(e) =>
                     handleNutrientChange('niacin', e.target.value)
@@ -527,6 +527,7 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
+
 
 
 
