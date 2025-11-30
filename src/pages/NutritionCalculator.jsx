@@ -127,7 +127,7 @@ const NutritionCalculator = () => {
       const name = (i.name || '').toLowerCase();
       const nameeng = (i.nameeng || '').toLowerCase();
       const cat = (i.category || '').toLowerCase();
-      return name.includes(q) || cat.includes(q);
+      return name.includes(q) || nameeng.includes(q) || cat.includes(q);
     });
   }, [items, search]);
 
@@ -267,5 +267,6 @@ const NutritionCalculator = () => {
 };
 
 export default NutritionCalculator;
+
 
 
