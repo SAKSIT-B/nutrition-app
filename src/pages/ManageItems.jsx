@@ -532,6 +532,8 @@ const ManageItems = () => {
                   }
                 />
               </label>
+               </div>
+            
                {/* Other */}
           <div className="nutrient-group">
             <div className="nutrient-group-title">กลุ่มที่ 4 อื่น ๆ</div>
@@ -616,6 +618,7 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
+
 
 
 
