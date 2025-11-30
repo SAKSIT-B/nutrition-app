@@ -678,6 +678,31 @@ body.theme-dark .item-nameeng {
   gap: 10px;
 }
 
+/* Brand + Logos ด้านบน Sidebar */
+.sidebar-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* แถวโลโก้ 3 อัน */
+.sidebar-logos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* รูปโลโก้แต่ละอัน */
+.sidebar-logos img {
+  height: 32px;          /* ปรับขนาดโลโก้หลัก ๆ ตรงนี้ */
+  width: auto;
+  border-radius: 999px;  /* ให้ดูเป็นเม็ดยา/วงกลม */
+  background: #ffffff;   /* ให้มีพื้นสีขาวตัดกับพื้น sidebar มืด ๆ */
+  padding: 4px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
 
 
 
