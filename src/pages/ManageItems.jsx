@@ -481,7 +481,7 @@ const ManageItems = () => {
                 />
               </label>
               <label>
-                Thiamin [mg]
+                Thiamin (B1) [mg]
                 <input
                   type="text"
                   value={form.nutrients.thiamin}
@@ -491,7 +491,7 @@ const ManageItems = () => {
                 />
               </label>
               <label>
-                Riboflavin [mg]
+                Riboflavin (B2) [mg]
                 <input
                   type="text"
                   value={form.nutrients.riboflavin}
@@ -501,7 +501,7 @@ const ManageItems = () => {
                 />
               </label>
               <label>
-                Niacin [mg]
+                Niacin (B3) [mg]
                 <input
                   type="text"
                   value={form.nutrients.niacin}
@@ -590,3 +590,4 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
+
