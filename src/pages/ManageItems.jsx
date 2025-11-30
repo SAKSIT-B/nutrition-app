@@ -54,7 +54,7 @@ const ManageItems = () => {
 
   const loadItems = async () => {
     try {
-      const snap = await getDocs(collection(db, 'ingredients'));
+      const snap = await getDocs(collection(db, 'items'));
       const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setItems(docs);
     } catch (e) {
@@ -109,11 +109,11 @@ const ManageItems = () => {
     setLoading(true);
     try {
       if (editingId) {
-        const ref = doc(db, 'ingredients', editingId);
+        const ref = doc(db, 'items', editingId);
         await updateDoc(ref, form);
         showToast('อัพเดทข้อมูลสำเร็จ', 'success');
       } else {
-        await addDoc(collection(db, 'ingredients'), form);
+        await addDoc(collection(db, 'items'), form);
         showToast('เพิ่มข้อมูลสำเร็จ', 'success');
       }
       resetForm();
@@ -129,7 +129,7 @@ const ManageItems = () => {
   const handleDelete = async (item) => {
     if (!window.confirm(`ต้องการลบ "${item.name}" ใช่ไหม?`)) return;
     try {
-      await deleteDoc(doc(db, 'ingredients', item.id));
+      await deleteDoc(doc(db, 'items', item.id));
       showToast('ลบข้อมูลสำเร็จ', 'success');
       await loadItems();
     } catch (e) {
@@ -503,3 +503,4 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
+
