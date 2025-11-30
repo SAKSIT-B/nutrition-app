@@ -166,6 +166,22 @@ const ManageItems = () => {
               value={form.name}
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="เช่น ก๋วยเตี๋ยว เส้นจันทน์ แห้ง"
+              type="text2"
+              value={form.nameeng}
+              onChange={(e) => handleChange('nameeng', e.target.value)}
+              placeholder="ex. Noodle, rice, small size strip, dried "
+            />
+          </label>
+        </div>
+
+        <div className="form-row">
+          <label>
+            Ingredient (แสดงในตัวคำนวณ)
+            <input
+              type="text"
+              value={form.nameeng}
+              onChange={(e) => handleChange('nameeng', e.target.value)}
+              placeholder="ex. Noodle, rice, small size strip, dried "
             />
           </label>
         </div>
@@ -503,4 +519,5 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
+
 
