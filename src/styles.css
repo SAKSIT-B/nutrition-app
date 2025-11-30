@@ -303,6 +303,10 @@ button[disabled] {
   font-size: 0.95rem;
 }
 
+.item-nameeng {
+  font-size: 0.95rem;
+}
+
 .item-meta {
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -632,6 +636,17 @@ body.theme-dark .item-name {
   color: #e5e7eb; /* ขาวนิด ๆ สำหรับพื้นหลังเข้ม */
 }
 
+.item-nameeng {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text); /* ใช้สีตัวหนังสือหลักของธีม */
+}
+
+body.theme-dark .item-nameeng {
+  color: #e5e7eb; /* ขาวนิด ๆ สำหรับพื้นหลังเข้ม */
+}
+
+
 .item-meta {
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -662,5 +677,6 @@ body.theme-dark .item-name {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 10px;
 }
+
 
 
