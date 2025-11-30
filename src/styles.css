@@ -346,57 +346,6 @@ button[disabled] {
   gap: 16px;
 }
 
-.item-list {
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 4px;
-  max-height: 420px;
-  overflow: auto;
-}
-
-.item-row {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: transparent;
-  border: none;
-  padding: 8px 10px;
-  border-radius: 12px;
-  text-align: left;
-
-  /* เพิ่มความลื่นตอน hover */
-  transition:
-    background 0.15s ease,
-    transform 0.1s ease,
-    box-shadow 0.15s ease;
-}
-
-.item-row:hover {
-  background: var(--primary-soft);
-  transform: translateY(-1px);              /* ลอยขึ้นนิดเดียว */
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08); /* เงาอ่อน ๆ ดูเป็นการ์ด */
-}
-
-
-.item-name {
-  font-size: 0.95rem;
-}
-
-.item-nameeng {
-  font-size: 0.95rem;
-}
-
-.item-meta {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.item-add {
-  font-size: 0.85rem;
-  color: var(--primary);
-}
-
 .selected-row {
   display: flex;
   align-items: center;
@@ -724,6 +673,51 @@ body.theme-dark .search-input {
   justify-content: center;
   text-align: center;
 }
+/* ========== รายการวัตถุดิบ / เมนู (ใช้ทั้งหน้า Calculator และ ManageItems) ========== */
+
+/* กล่อง list */
+.item-list {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 4px;
+  max-height: 420px;
+  overflow: auto;
+}
+
+/* แถวแต่ละรายการ */
+.item-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* ระยะห่างระหว่างชื่อ / หมวด / ปุ่มเพิ่ม */
+  background: transparent;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  /* เพิ่มความลื่นตอน hover */
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
+}
+
+/* เอฟเฟกต์ hover ให้ลอยนิด ๆ */
+.item-row:hover {
+  background: var(--primary-soft);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+/* บล็อกฝั่งซ้าย: ชื่อไทย + อังกฤษ เรียงเป็นคอลัมน์เดียวกันสวย ๆ */
+.item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
 /* ทำให้ชื่อวัตถุดิบ / เมนู อ่านได้ชัดทั้ง light และ dark */
 .item-name {
@@ -736,20 +730,37 @@ body.theme-dark .item-name {
   color: #e5e7eb; /* ขาวนิด ๆ สำหรับพื้นหลังเข้ม */
 }
 
+/* ชื่อภาษาอังกฤษอยู่บรรทัดรอง ตัวเล็กลงนิดหน่อย */
 .item-nameeng {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--text); /* ใช้สีตัวหนังสือหลักของธีม */
 }
 
 body.theme-dark .item-nameeng {
-  color: #e5e7eb; /* ขาวนิด ๆ สำหรับพื้นหลังเข้ม */
+  color: #e5e7eb;
 }
 
+/* หมวดหมู่ แสดงเป็น pill ด้านขวา ให้ขนาดเท่ากัน */
+.item-category-pill {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
 
+/* meta text ที่ใช้ในส่วนอื่น ๆ เช่น รายการที่เลือก */
 .item-meta {
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+/* ปุ่ม "เพิ่ม" ด้านขวาสุด */
+.item-add {
+  font-size: 0.85rem;
+  color: var(--primary);
 }
 
 /* layout ของฟอร์ม nutrient ในหน้า ManageItems */
@@ -802,6 +813,7 @@ body.theme-dark .item-nameeng {
   padding: 4px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
 }
+
 
 
 
