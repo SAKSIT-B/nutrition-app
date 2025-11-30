@@ -385,6 +385,7 @@ const NutritionCalculator = () => {
         <div>
           <h3 style={{ marginTop: 0 }}>รายการที่เลือกไว้</h3>
 
+          <div className="selected-list">
           {selected.map((item, index) => (
             <div key={`${item.id}-${index}`} className="selected-row">
               <div className="selected-name">
@@ -413,7 +414,7 @@ const NutritionCalculator = () => {
               </button>
             </div>
           ))}
-
+     </div>
           {/* ผลรวมแบบแยก 3 กลุ่ม */}
           <h3 style={{ marginTop: 16 }}>ผลรวมคุณค่าทางโภชนาการ</h3>
           <p className="muted">
@@ -450,6 +451,7 @@ const NutritionCalculator = () => {
 };
 
 export default NutritionCalculator;
+
 
 
 
