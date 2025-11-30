@@ -296,7 +296,7 @@ const SavedRecipes = () => {
 
             <div className="modal-body">
               {viewingRecipe.description && (
-                <p className="recipe-description">{viewingRecipe.description}</p>
+                <p className="recipe-description">คำอธิบาย:''{viewingRecipe.description}</p>
               )}
 
               <h4>วัตถุดิบ ({viewingRecipe.items?.length || 0} รายการ)</h4>
