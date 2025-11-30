@@ -34,7 +34,6 @@ const Sidebar = () => {
           การคำนวณโภชนาการ
         </NavLink>
 
-        {/* เพิ่มเมนูใหม่ตรงนี้ */}
         <NavLink
           to="/dashboard/thai-rdi"
           className={({ isActive }) =>
@@ -42,6 +41,16 @@ const Sidebar = () => {
           }
         >
           ฉลากโภชนาการ (Thai RDI)
+        </NavLink>
+
+        {/* เพิ่มเมนูสูตรอาหาร */}
+        <NavLink
+          to="/dashboard/recipes"
+          className={({ isActive }) =>
+            'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
+          }
+        >
+          📖 สูตรอาหาร
         </NavLink>
 
         {(role === 'admin' || role === 'owner' || role === 'mod') && (
