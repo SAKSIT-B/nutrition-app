@@ -78,8 +78,28 @@ const Register = () => {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
+  <div className="auth-page">
+    <div className="auth-layout">
+      <section className="auth-left">
+        <h1 className="auth-app-name">Nutrition App</h1>
+        <p className="auth-app-desc">
+          ลงทะเบียนเพื่อใช้งานระบบคำนวณและจัดการข้อมูลโภชนาการสำหรับงานสอนและงานวิจัย
+        </p>
+        <ul className="auth-app-points">
+          <li>บันทึกวัตถุดิบ / เมนูที่ใช้บ่อย</li>
+          <li>จัดการข้อมูลผ่านหน้าแดชบอร์ด</li>
+          <li>รองรับการกำหนดสิทธิ์การใช้งานหลายระดับ</li>
+        </ul>
+      </section>
+
+      <section className="auth-right">
+        <div className="auth-card">
+          <div className="auth-logo-row">
+            <img src={logo1} alt="โลโก้ 1" />
+            <img src={logo2} alt="โลโก้ 2" />
+            <img src={logo3} alt="โลโก้ 3" />
+          </div>
+          
         <h1 className="auth-title">สมัครสมาชิก</h1>
 
         {error && <div className="auth-error">{error}</div>}
@@ -143,9 +163,12 @@ const Register = () => {
         <div className="auth-links">
           <Link to="/login">มีบัญชีอยู่แล้ว? เข้าสู่ระบบ</Link>
         </div>
-      </div>
+        </div>
+      </section>
     </div>
+  </div>
   )
 }
 
 export default Register
+
