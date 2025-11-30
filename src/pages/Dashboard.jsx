@@ -6,7 +6,8 @@ import Topbar from '../components/Topbar'
 import NutritionCalculator from './NutritionCalculator'
 import ManageItems from './ManageItems'
 import AdminConsole from './AdminConsole'
-import ThaiRDICalculator from './ThaiRDICalculator'  // เพิ่มบรรทัดนี้
+import ThaiRDICalculator from './ThaiRDICalculator'
+import SavedRecipes from './SavedRecipes'  // เพิ่มบรรทัดนี้
 import ProtectedRoute from '../components/ProtectedRoute'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -22,17 +23,13 @@ const Dashboard = () => {
 
         <div className="layout-content">
           <Routes>
-
-            {/* default redirect */}
             <Route path="/" element={<Navigate to="nutrition" />} />
-
-            {/* หน้าใช้งานทั่วไป */}
             <Route path="nutrition" element={<NutritionCalculator />} />
-
-            {/* เพิ่ม route ใหม่ตรงนี้ */}
             <Route path="thai-rdi" element={<ThaiRDICalculator />} />
+            
+            {/* เพิ่ม route สูตรอาหาร */}
+            <Route path="recipes" element={<SavedRecipes />} />
 
-            {/* หน้าเพิ่ม/แก้ไขข้อมูล — owner/admin/mod เข้าถึงได้ */}
             <Route
               path="manage-items"
               element={
@@ -41,8 +38,6 @@ const Dashboard = () => {
                 </ProtectedRoute>
               }
             />
-
-            {/* หน้าแอดมิน — owner/admin เท่านั้น */}
             <Route
               path="admin"
               element={
@@ -51,9 +46,7 @@ const Dashboard = () => {
                 </ProtectedRoute>
               }
             />
-
             <Route path="*" element={<div>ไม่พบหน้านี้ (role: {role})</div>} />
-
           </Routes>
         </div>
       </div>
