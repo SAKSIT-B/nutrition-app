@@ -3772,6 +3772,9 @@ body.theme-dark .recipe-badge.private {
 /* Enhanced Form Elements */
 .auth-form {
   animation: formFadeIn 0.6s ease-out 0.5s both;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 @keyframes formFadeIn {
@@ -3785,48 +3788,73 @@ body.theme-dark .recipe-badge.private {
   }
 }
 
+/* Form Label - แก้ไขให้แสดงเป็นบรรทัดแยก */
 .auth-form label {
   position: relative;
-  display: block;
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 0;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
 }
 
+body.theme-dark .auth-form label {
+  color: #e5e7eb;
+}
+
+/* Form Input - ปรับให้เต็มความกว้าง */
 .auth-form input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: transparent;
+  color: var(--text);
   transition: all 0.3s ease;
-  position: relative;
-  border: 2px solid transparent;
+  box-sizing: border-box;
+}
+
+body.theme-dark .auth-form input {
+  border-color: #4b5563;
+  background: transparent;
+  color: #f9fafb;
 }
 
 .auth-form input:focus {
+  outline: none;
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(74, 144, 226, 0.15);
   border-color: #4a90e2;
 }
 
-.auth-form input:focus + .input-highlight {
-  width: 100%;
+body.theme-dark .auth-form input:focus {
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+  border-color: #6366f1;
 }
 
-/* Floating Label Effect */
-.auth-form label {
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 8px;
-  display: block;
-  transition: all 0.3s ease;
-}
-
-.auth-form input:focus ~ label,
-.auth-form input:not(:placeholder-shown) ~ label {
+/* Label Animation on Focus */
+.auth-form label:focus-within {
   color: #4a90e2;
-  transform: translateY(-2px);
+}
+
+body.theme-dark .auth-form label:focus-within {
+  color: #818cf8;
 }
 
 /* Enhanced Button */
 .auth-form button[type="submit"] {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 20px;
   position: relative;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .auth-form button[type="submit"]::before {
@@ -3850,6 +3878,10 @@ body.theme-dark .recipe-badge.private {
 .auth-form button[type="submit"]:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 28px rgba(74, 144, 226, 0.4);
+}
+
+body.theme-dark .auth-form button[type="submit"]:hover {
+  box-shadow: 0 12px 28px rgba(99, 102, 241, 0.5);
 }
 
 .auth-form button[type="submit"]:active {
@@ -4065,3 +4097,4 @@ body.theme-dark .recipe-badge.private {
     opacity: 1;
   }
 }
+
