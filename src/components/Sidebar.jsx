@@ -6,12 +6,55 @@ import logo1 from '../assets/logo1.png'
 import logo2 from '../assets/logo2.png'
 import logo3 from '../assets/logo3.png'
 
+// รายการเมนูทั้งหมด
+const MENU_ITEMS = [
+  {
+    path: '/dashboard/nutrition',
+    label: 'การคำนวณโภชนาการ',
+    icon: '🧮',
+    permission: 'nutrition',
+  },
+  {
+    path: '/dashboard/thai-rdi',
+    label: 'ฉลากโภชนาการ (Thai RDI)',
+    icon: '🏷️',
+    permission: 'thai-rdi',
+  },
+  {
+    path: '/dashboard/recipes',
+    label: 'สูตรอาหาร',
+    icon: '📖',
+    permission: 'recipes',
+  },
+  {
+    path: '/dashboard/compare',
+    label: 'เปรียบเทียบสูตร',
+    icon: '📊',
+    permission: 'compare',
+  },
+  {
+    path: '/dashboard/manage-items',
+    label: 'เพิ่ม/แก้ไขวัตถุดิบ & เมนู',
+    icon: '🥗',
+    permission: 'manage-items',
+  },
+  {
+    path: '/dashboard/admin',
+    label: 'คอนโซลสำหรับ Admin',
+    icon: '⚙️',
+    permission: 'admin',
+  },
+]
+
 const Sidebar = () => {
-  const { role } = useAuth()
+  const { hasPermission, roleData } = useAuth()
+
+  // กรองเมนูตาม permission
+  const visibleMenus = MENU_ITEMS.filter((item) => hasPermission(item.permission))
 
   return (
     <aside className="sidebar">
-       <div className="sidebar-brand">
+      <div className="sidebar-brand">
         <div className="sidebar-logos">
           <img src={logo1} alt="โลโก้ 1" />
           <img src={logo2} alt="โลโก้ 2" />
@@ -24,63 +67,37 @@ const Sidebar = () => {
           </p>
         </div>
       </div>
+
+      {/* แสดงบทบาทปัจจุบัน */}
+      {roleData && (
+        <div className="sidebar-role">
+          <span
+            className="sidebar-role-badge"
+            style={{ backgroundColor: roleData.color }}
+          >
+            {roleData.icon} {roleData.name}
+          </span>
+        </div>
+      )}
+
       <nav className="sidebar-nav">
-        <NavLink
-          to="/dashboard/nutrition"
-          className={({ isActive }) =>
-            'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
-          }
-        >
-          📟 การคำนวณโภชนาการ
-        </NavLink>
-
-        <NavLink
-          to="/dashboard/thai-rdi"
-          className={({ isActive }) =>
-            'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
-          }
-        >
-          🧾 ฉลากโภชนาการ (Thai RDI)
-        </NavLink>
-
-        <NavLink
-          to="/dashboard/recipes"
-          className={({ isActive }) =>
-            'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
-          }
-        >
-          📖 สูตรอาหาร
-        </NavLink>
-
-        <NavLink
-          to="/dashboard/compare"
-          className={({ isActive }) =>
-            'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
-          }
-        >
-          📊 เปรียบเทียบสูตร
-        </NavLink>
-
-        {(role === 'admin' || role === 'owner' || role === 'mod') && (
+        {visibleMenus.map((item) => (
           <NavLink
-            to="/dashboard/manage-items"
+            key={item.path}
+            to={item.path}
             className={({ isActive }) =>
               'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
             }
           >
-            🪛 เพิ่ม/แก้ไขวัตถุดิบ & เมนู
+            <span className="sidebar-link-icon">{item.icon}</span>
+            <span className="sidebar-link-label">{item.label}</span>
           </NavLink>
-        )}
+        ))}
 
-        {(role === 'admin' || role === 'owner') && (
-          <NavLink
-            to="/dashboard/admin"
-            className={({ isActive }) =>
-              'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
-            }
-          >
-            🧰 คอนโซลสำหรับ Admin
-          </NavLink>
+        {visibleMenus.length === 0 && (
+          <div className="sidebar-empty">
+            <p>ไม่มีเมนูที่เข้าถึงได้</p>
+          </div>
         )}
       </nav>
     </aside>
