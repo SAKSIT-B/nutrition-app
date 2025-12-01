@@ -10,6 +10,8 @@ import ThaiRDICalculator from './ThaiRDICalculator'
 import SavedRecipes from './SavedRecipes'  // เพิ่มบรรทัดนี้
 import ProtectedRoute from '../components/ProtectedRoute'
 import { useAuth } from '../contexts/AuthContext'
+import CompareRecipes from './CompareRecipes'
+
 
 const Dashboard = () => {
   const { role } = useAuth()
@@ -26,6 +28,8 @@ const Dashboard = () => {
             <Route path="/" element={<Navigate to="nutrition" />} />
             <Route path="nutrition" element={<NutritionCalculator />} />
             <Route path="thai-rdi" element={<ThaiRDICalculator />} />
+            <Route path="compare" element={<CompareRecipes />} />
+
             
             {/* เพิ่ม route สูตรอาหาร */}
             <Route path="recipes" element={<SavedRecipes />} />
@@ -55,3 +59,4 @@ const Dashboard = () => {
 }
 
 export default Dashboard
+
