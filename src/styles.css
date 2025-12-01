@@ -3541,6 +3541,7 @@ body.theme-dark .recipe-badge.private {
               radial-gradient(circle at 70% 80%, rgba(80, 200, 120, 0.1) 0%, transparent 50%);
   animation: backgroundMove 20s ease-in-out infinite;
   pointer-events: none;
+  z-index: 0;
 }
 
 @keyframes backgroundMove {
@@ -3560,6 +3561,8 @@ body.theme-dark .recipe-badge.private {
 
 /* Enhanced Auth Layout */
 .auth-layout {
+  position: relative;
+  z-index: 1;
   animation: fadeInUp 0.8s ease-out;
 }
 
@@ -3673,8 +3676,9 @@ body.theme-dark .recipe-badge.private {
 
 /* Enhanced Auth Card */
 .auth-card {
-  animation: slideInRight 0.8s ease-out;
   position: relative;
+  z-index: 2;
+  animation: slideInRight 0.8s ease-out;
   overflow: hidden;
 }
 
@@ -3688,6 +3692,7 @@ body.theme-dark .recipe-badge.private {
   background: radial-gradient(circle, rgba(74, 144, 226, 0.05) 0%, transparent 70%);
   animation: rotateGradient 15s linear infinite;
   pointer-events: none;
+  z-index: -1;
 }
 
 @keyframes slideInRight {
@@ -3771,6 +3776,8 @@ body.theme-dark .recipe-badge.private {
 
 /* Enhanced Form Elements */
 .auth-form {
+  position: relative;
+  z-index: 3;
   animation: formFadeIn 0.6s ease-out 0.5s both;
   display: flex;
   flex-direction: column;
@@ -3791,6 +3798,7 @@ body.theme-dark .recipe-badge.private {
 /* Form Label - แก้ไขให้แสดงเป็นบรรทัดแยก */
 .auth-form label {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -3799,6 +3807,11 @@ body.theme-dark .recipe-badge.private {
   color: #333;
   font-size: 0.9rem;
   transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.auth-form label * {
+  pointer-events: auto;
 }
 
 body.theme-dark .auth-form label {
@@ -3816,6 +3829,8 @@ body.theme-dark .auth-form label {
   color: var(--text);
   transition: all 0.3s ease;
   box-sizing: border-box;
+  position: relative;
+  z-index: 2;
 }
 
 body.theme-dark .auth-form input {
@@ -3855,6 +3870,8 @@ body.theme-dark .auth-form label:focus-within {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   font-size: 0.95rem;
   font-weight: 600;
+  z-index: 4;
+  cursor: pointer;
 }
 
 .auth-form button[type="submit"]::before {
@@ -3868,6 +3885,8 @@ body.theme-dark .auth-form label:focus-within {
   background: rgba(255, 255, 255, 0.3);
   transform: translate(-50%, -50%);
   transition: width 0.6s ease, height 0.6s ease;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .auth-form button[type="submit"]:hover::before {
@@ -3875,16 +3894,16 @@ body.theme-dark .auth-form label:focus-within {
   height: 300px;
 }
 
-.auth-form button[type="submit"]:hover {
+.auth-form button[type="submit"]:not(:disabled):hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 28px rgba(74, 144, 226, 0.4);
 }
 
-body.theme-dark .auth-form button[type="submit"]:hover {
+body.theme-dark .auth-form button[type="submit"]:not(:disabled):hover {
   box-shadow: 0 12px 28px rgba(99, 102, 241, 0.5);
 }
 
-.auth-form button[type="submit"]:active {
+.auth-form button[type="submit"]:not(:disabled):active {
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(74, 144, 226, 0.3);
 }
