@@ -64,36 +64,35 @@ const ManageItems = () => {
   // โหลดข้อมูลแบบ Realtime
   // -----------------------------
   useEffect(() => {
-    const q = query(collection(db, 'items'), orderBy('updatedAt', 'desc'));
+  const unsubscribe = onSnapshot(
+    collection(db, 'items'),  // ไม่มี orderBy
+    (snapshot) => {
+      let docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        let docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      // เรียงตาม updatedAt ใน JavaScript แทน
+      docs.sort((a, b) => {
+        const ta =
+          (a.updatedAt?.toMillis?.()) ||
+          (a.createdAt?.toMillis?.()) ||
+          0;
+        const tb =
+          (b.updatedAt?.toMillis?.()) ||
+          (b.createdAt?.toMillis?.()) ||
+          0;
+        return tb - ta; // ใหม่สุดอยู่บน
+      });
 
-        // เรียงตาม updatedAt (ถ้าไม่มีให้ใช้ createdAt)
-        docs.sort((a, b) => {
-          const ta =
-            (a.updatedAt && a.updatedAt.toMillis && a.updatedAt.toMillis()) ||
-            (a.createdAt && a.createdAt.toMillis && a.createdAt.toMillis()) ||
-            0;
-          const tb =
-            (b.updatedAt && b.updatedAt.toMillis && b.updatedAt.toMillis()) ||
-            (b.createdAt && b.createdAt.toMillis && b.createdAt.toMillis()) ||
-            0;
-          return tb - ta;
-        });
+      setItems(docs);
+    },
+    (error) => {
+      console.error(error);
+      showToast('โหลดข้อมูลไม่สำเร็จ', 'error');
+    }
+  );
 
-        setItems(docs);
-      },
-      (error) => {
-        console.error(error);
-        showToast('โหลดข้อมูลไม่สำเร็จ', 'error');
-      }
-    );
+  return () => unsubscribe();
+}, [showToast]);
 
-    return () => unsubscribe();
-  }, [showToast]);
 
   // -----------------------------
   // จัดการโหมดแก้ไข / รีเซ็ตฟอร์ม
@@ -560,3 +559,4 @@ const ManageItems = () => {
 };
 
 export default ManageItems;
+
