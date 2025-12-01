@@ -7,14 +7,39 @@ import NutritionCalculator from './NutritionCalculator'
 import ManageItems from './ManageItems'
 import AdminConsole from './AdminConsole'
 import ThaiRDICalculator from './ThaiRDICalculator'
-import SavedRecipes from './SavedRecipes'  // เพิ่มบรรทัดนี้
+import SavedRecipes from './SavedRecipes'
+import CompareRecipes from './CompareRecipes'
 import ProtectedRoute from '../components/ProtectedRoute'
 import { useAuth } from '../contexts/AuthContext'
-import CompareRecipes from './CompareRecipes'
 
+// หน้า Access Denied
+const AccessDenied = () => (
+  <div className="center-full">
+    <div className="access-denied">
+      <div className="access-denied-icon">🚫</div>
+      <h2>ไม่มีสิทธิ์เข้าถึง</h2>
+      <p>คุณไม่มีสิทธิ์เข้าหน้านี้</p>
+    </div>
+  </div>
+)
+
+// หน้า 404
+const NotFound = () => {
+  const { role } = useAuth()
+  return (
+    <div className="center-full">
+      <div className="not-found">
+        <div className="not-found-icon">🔍</div>
+        <h2>404</h2>
+        <p>ไม่พบหน้านี้</p>
+        <p className="not-found-role">บทบาท: {role}</p>
+      </div>
+    </div>
+  )
+}
 
 const Dashboard = () => {
-  const { role } = useAuth()
+  const { hasPermission } = useAuth()
 
   return (
     <div className="layout">
@@ -25,32 +50,83 @@ const Dashboard = () => {
 
         <div className="layout-content">
           <Routes>
+            {/* Default redirect */}
             <Route path="/" element={<Navigate to="nutrition" />} />
-            <Route path="nutrition" element={<NutritionCalculator />} />
-            <Route path="thai-rdi" element={<ThaiRDICalculator />} />
-            <Route path="compare" element={<CompareRecipes />} />
 
-            
-            {/* เพิ่ม route สูตรอาหาร */}
-            <Route path="recipes" element={<SavedRecipes />} />
+            {/* หน้าคำนวณโภชนาการ */}
+            <Route
+              path="nutrition"
+              element={
+                hasPermission('nutrition') ? (
+                  <NutritionCalculator />
+                ) : (
+                  <AccessDenied />
+                )
+              }
+            />
 
+            {/* หน้าฉลากโภชนาการ */}
+            <Route
+              path="thai-rdi"
+              element={
+                hasPermission('thai-rdi') ? (
+                  <ThaiRDICalculator />
+                ) : (
+                  <AccessDenied />
+                )
+              }
+            />
+
+            {/* หน้าสูตรอาหาร */}
+            <Route
+              path="recipes"
+              element={
+                hasPermission('recipes') ? (
+                  <SavedRecipes />
+                ) : (
+                  <AccessDenied />
+                )
+              }
+            />
+
+            {/* หน้าเปรียบเทียบสูตร */}
+            <Route
+              path="compare"
+              element={
+                hasPermission('compare') ? (
+                  <CompareRecipes />
+                ) : (
+                  <AccessDenied />
+                )
+              }
+            />
+
+            {/* หน้าจัดการวัตถุดิบ */}
             <Route
               path="manage-items"
               element={
-                <ProtectedRoute allowedRoles={['owner', 'admin', 'mod']}>
+                hasPermission('manage-items') ? (
                   <ManageItems />
-                </ProtectedRoute>
+                ) : (
+                  <AccessDenied />
+                )
               }
             />
+
+            {/* หน้า Admin Console */}
             <Route
               path="admin"
               element={
-                <ProtectedRoute allowedRoles={['owner', 'admin']}>
+                hasPermission('admin') ? (
                   <AdminConsole />
-                </ProtectedRoute>
+                ) : (
+                  <AccessDenied />
+                )
               }
             />
-            <Route path="*" element={<div>ไม่พบหน้านี้ (role: {role})</div>} />
+
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
       </div>
@@ -59,4 +135,3 @@ const Dashboard = () => {
 }
 
 export default Dashboard
-
