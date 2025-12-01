@@ -211,7 +211,7 @@ const Login = () => {
             </div>
 
             <div className="auth-footer">
-              <p>© 2024 Nutrition App - วิทยาลัยอาชีวศึกษาสุโขทัย</p>
+              <p>© 2024 Nutrition App - ครูศักดิ์สิทธิ์ บำรุง</p>
             </div>
           </div>
         </section>
@@ -221,3 +221,4 @@ const Login = () => {
 }
 
 export default Login
+
