@@ -109,6 +109,11 @@ const ManageItems = () => {
   const [editingId, setEditingId] = useState(null);
   const [searchAll, setSearchAll] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+  
   const [expandedGroups, setExpandedGroups] = useState({
     main: true,
     minerals: false,
@@ -135,7 +140,7 @@ const ManageItems = () => {
       (snapshot) => {
         let docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-        // เรียงตาม updatedAt ใน JavaScript แทน
+        // เรียงตาม updatedAt ใหม่สุดอยู่บน
         docs.sort((a, b) => {
           const ta =
             (a.updatedAt?.toMillis?.()) ||
@@ -159,6 +164,11 @@ const ManageItems = () => {
     return () => unsubscribe();
   }, [showToast]);
 
+  // Reset page เมื่อค้นหาหรือเปลี่ยน pageSize
+  useEffect(() => {
+    setPage(1);
+  }, [searchAll, pageSize]);
+
   // -----------------------------
   // จัดการโหมดแก้ไข / รีเซ็ตฟอร์ม
   // -----------------------------
@@ -171,7 +181,6 @@ const ManageItems = () => {
       category: item.category || '',
       nutrients: { ...EMPTY_NUTRIENTS, ...(item.nutrients || {}) },
     });
-    // เลื่อนขึ้นไปด้านบน
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showToast(`กำลังแก้ไข "${item.name}" ✏️`, 'info');
   };
@@ -195,7 +204,6 @@ const ManageItems = () => {
     }));
   };
 
-  // Expand all groups
   const expandAllGroups = () => {
     setExpandedGroups({
       main: true,
@@ -205,7 +213,6 @@ const ManageItems = () => {
     });
   };
 
-  // Collapse all groups
   const collapseAllGroups = () => {
     setExpandedGroups({
       main: false,
@@ -255,6 +262,8 @@ const ManageItems = () => {
           updatedAt: serverTimestamp(),
         });
         showToast('เพิ่มข้อมูลสำเร็จ ✨', 'success');
+        // กลับไปหน้าแรกเพื่อเห็นรายการใหม่
+        setPage(1);
       }
       resetForm();
     } catch (e) {
@@ -298,6 +307,19 @@ const ManageItems = () => {
       );
     });
   }, [items, searchAll]);
+
+  // -----------------------------
+  // Pagination
+  // -----------------------------
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const pagedItems = filteredItems.slice(startIndex, endIndex);
+
+  const goPrev = () => setPage((p) => Math.max(1, p - 1));
+  const goNext = () => setPage((p) => Math.min(totalPages, p + 1));
+  const goFirst = () => setPage(1);
+  const goLast = () => setPage(totalPages);
 
   // -----------------------------
   // render
@@ -494,13 +516,13 @@ const ManageItems = () => {
 
       <hr className="section-divider" />
 
-      {/* ช่องค้นหาจากรายการทั้งหมด */}
-      <div className="search-section">
+      {/* ช่องค้นหา + ตัวเลือก */}
+      <div className="search-filter-section">
         <div className="search-input-wrapper">
           <span className="search-icon">🔍</span>
           <input
             type="search"
-            placeholder="ค้นหารายการทั้งหมดตามชื่อไทยและอังกฤษ / หมวด / หมายเหตุ..."
+            placeholder="ค้นหารายการ..."
             value={searchAll}
             onChange={(e) => setSearchAll(e.target.value)}
             className="search-input"
@@ -515,24 +537,51 @@ const ManageItems = () => {
             </button>
           )}
         </div>
+
+        <div className="filter-options">
+          <span className="filter-label">แสดง:</span>
+          <select
+            value={pageSize}
+            onChange={(e) => setPageSize(Number(e.target.value))}
+            className="filter-select"
+          >
+            <option value={10}>10 รายการ</option>
+            <option value={15}>15 รายการ</option>
+            <option value={20}>20 รายการ</option>
+            <option value={30}>30 รายการ</option>
+            <option value={50}>50 รายการ</option>
+          </select>
+          <span className="filter-count">
+            พบ {filteredItems.length} รายการ
+          </span>
+        </div>
       </div>
 
       {/* รายการทั้งหมด */}
       <div className="items-section">
-        <h3 className="items-section-title">
-          <span>📚</span>
-          รายการทั้งหมด
-          <span className="items-count">{filteredItems.length} รายการ</span>
-        </h3>
+        <div className="items-section-header">
+          <h3 className="items-section-title">
+            <span>📚</span>
+            รายการทั้งหมด
+            <span className="items-count">{filteredItems.length}</span>
+          </h3>
+          
+          {/* Pagination Info */}
+          {filteredItems.length > pageSize && (
+            <div className="pagination-info-top">
+              แสดง {startIndex + 1} - {Math.min(endIndex, filteredItems.length)} จาก {filteredItems.length}
+            </div>
+          )}
+        </div>
 
         <div className="items-list">
-          {filteredItems.map((item, index) => (
+          {pagedItems.map((item, index) => (
             <div 
               key={item.id} 
               className={`item-card ${editingId === item.id ? 'editing' : ''}`}
               style={{ animationDelay: `${index * 0.02}s` }}
             >
-              <div className="item-card-number">{index + 1}</div>
+              <div className="item-card-number">{startIndex + index + 1}</div>
               
               <div className="item-card-info">
                 <div className="item-card-name">{item.name}</div>
@@ -572,7 +621,7 @@ const ManageItems = () => {
             </div>
           ))}
 
-          {!filteredItems.length && (
+          {!pagedItems.length && (
             <div className="empty-state">
               <div className="empty-icon">🔍</div>
               <div className="empty-text">ไม่พบข้อมูลที่ตรงกับคำค้นหา</div>
@@ -580,6 +629,80 @@ const ManageItems = () => {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {filteredItems.length > pageSize && (
+          <div className="pagination-container">
+            <div className="pagination-buttons">
+              <button
+                type="button"
+                onClick={goFirst}
+                disabled={page === 1}
+                className="pagination-btn"
+                title="หน้าแรก"
+              >
+                ⏮️
+              </button>
+              <button
+                type="button"
+                onClick={goPrev}
+                disabled={page === 1}
+                className="pagination-btn"
+              >
+                ◀ ก่อนหน้า
+              </button>
+              
+              <div className="pagination-pages">
+                {/* แสดงเลขหน้า */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (page <= 3) {
+                    pageNum = i + 1;
+                  } else if (page >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = page - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      type="button"
+                      onClick={() => setPage(pageNum)}
+                      className={`pagination-page ${page === pageNum ? 'active' : ''}`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={page === totalPages}
+                className="pagination-btn"
+              >
+                ถัดไป ▶
+              </button>
+              <button
+                type="button"
+                onClick={goLast}
+                disabled={page === totalPages}
+                className="pagination-btn"
+                title="หน้าสุดท้าย"
+              >
+                ⏭️
+              </button>
+            </div>
+
+            <div className="pagination-summary">
+              หน้า <strong>{page}</strong> จาก <strong>{totalPages}</strong> หน้า
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
