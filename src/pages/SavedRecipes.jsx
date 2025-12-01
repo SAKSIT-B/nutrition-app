@@ -5,8 +5,6 @@ import {
   deleteDoc,
   updateDoc,
   doc,
-  query,
-  orderBy,
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -51,15 +49,25 @@ const SavedRecipes = () => {
   const { user, role } = useAuth();
   const { showToast } = useToast();
 
-  // -----------------------------
-  // โหลดสูตรแบบ Realtime
-  // -----------------------------
+  // ตรวจสอบว่าเป็น admin/mod/owner หรือไม่
+  const isAdminOrMod = ['admin', 'mod', 'owner'].includes(role);
+
+  // โหลดสูตรแบบ Realtime (ไม่ใช้ orderBy)
   useEffect(() => {
-    const q = query(collection(db, 'recipes'), orderBy('createdAt', 'desc'));
-    
-    const unsubscribe = onSnapshot(q,
+    const unsubscribe = onSnapshot(
+      collection(db, 'recipes'),
       (snapshot) => {
-        const docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        let docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        
+        // เรียงตาม createdAt ใน JavaScript (ใหม่สุดอยู่บน)
+        docs.sort((a, b) => {
+          const ta =
+            (a.createdAt && a.createdAt.toMillis && a.createdAt.toMillis()) || 0;
+          const tb =
+            (b.createdAt && b.createdAt.toMillis && b.createdAt.toMillis()) || 0;
+          return tb - ta;
+        });
+
         setRecipes(docs);
         setLoading(false);
       },
@@ -96,12 +104,35 @@ const SavedRecipes = () => {
     return result;
   }, [recipes, activeTab, search, user]);
 
+  // ตรวจสอบว่าสามารถลบสูตรได้หรือไม่
+  const canDeleteRecipe = (recipe) => {
+    // เจ้าของสูตรลบได้เสมอ
+    if (recipe.createdBy?.uid === user?.uid) return true;
+    
+    // admin/mod/owner ลบสูตรสาธารณะได้
+    if (isAdminOrMod && recipe.isPublic) return true;
+    
+    return false;
+  };
+
+  // ตรวจสอบว่าเป็นเจ้าของสูตรหรือไม่
+  const isOwner = (recipe) => recipe.createdBy?.uid === user?.uid;
+
   // ลบสูตร
   const handleDelete = async (recipe) => {
-    if (!window.confirm(`ต้องการลบสูตร "${recipe.name}" ใช่ไหม?`)) return;
+    const isOwnRecipe = isOwner(recipe);
+    const confirmMessage = isOwnRecipe
+      ? `ต้องการลบสูตร "${recipe.name}" ใช่ไหม?`
+      : `⚠️ คุณกำลังลบสูตรของ "${recipe.createdBy?.displayName || 'ผู้ใช้อื่น'}"\n\nต้องการลบสูตร "${recipe.name}" ใช่ไหม?`;
+
+    if (!window.confirm(confirmMessage)) return;
+
     try {
       await deleteDoc(doc(db, 'recipes', recipe.id));
-      showToast('ลบสูตรสำเร็จ', 'success');
+      showToast(
+        isOwnRecipe ? 'ลบสูตรสำเร็จ' : 'ลบสูตรสาธารณะสำเร็จ (โดย Admin)',
+        'success'
+      );
     } catch (e) {
       console.error(e);
       showToast('ลบสูตรไม่สำเร็จ', 'error');
@@ -163,7 +194,7 @@ const SavedRecipes = () => {
   return (
     <div className="card">
       <h2 className="page-title">📖 สูตรอาหาร</h2>
-      <p className="card-subtitle">บันทึกและจัดการสูตรอาหารของคุณ (อัพเดทแบบ Realtime)</p>
+      <p className="card-subtitle">บันทึกและจัดการสูตรอาหารของคุณ</p>
 
       {/* Tabs */}
       <div className="recipe-tabs">
@@ -252,23 +283,28 @@ const SavedRecipes = () => {
                 >
                   Export
                 </button>
-                {recipe.createdBy?.uid === user?.uid && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => togglePublic(recipe)}
-                      className="recipe-btn toggle"
-                    >
-                      {recipe.isPublic ? '🔒 ซ่อน' : '🌐 แชร์'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(recipe)}
-                      className="recipe-btn delete"
-                    >
-                      ลบ
-                    </button>
-                  </>
+                
+                {/* ปุ่มแชร์/ซ่อน - เฉพาะเจ้าของ */}
+                {isOwner(recipe) && (
+                  <button
+                    type="button"
+                    onClick={() => togglePublic(recipe)}
+                    className="recipe-btn toggle"
+                  >
+                    {recipe.isPublic ? '🔒 ซ่อน' : '🌐 แชร์'}
+                  </button>
+                )}
+                
+                {/* ปุ่มลบ - เจ้าของ หรือ admin/mod/owner (สำหรับสูตรสาธารณะ) */}
+                {canDeleteRecipe(recipe) && (
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(recipe)}
+                    className={`recipe-btn delete ${!isOwner(recipe) ? 'admin-delete' : ''}`}
+                    title={!isOwner(recipe) ? 'ลบในฐานะ Admin/Mod' : 'ลบสูตร'}
+                  >
+                    {!isOwner(recipe) ? '🛡️ ลบ' : 'ลบ'}
+                  </button>
                 )}
               </div>
             </div>
@@ -281,7 +317,7 @@ const SavedRecipes = () => {
         <div className="modal-overlay" onClick={() => setViewingRecipe(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>ชื่อสูตร: {viewingRecipe.name}</h3>
+              <h3>{viewingRecipe.name}</h3>
               <button
                 type="button"
                 onClick={() => setViewingRecipe(null)}
@@ -293,7 +329,7 @@ const SavedRecipes = () => {
 
             <div className="modal-body">
               {viewingRecipe.description && (
-                <p className="recipe-description">คำอธิบาย: {viewingRecipe.description}</p>
+                <p className="recipe-description">{viewingRecipe.description}</p>
               )}
 
               <h4>วัตถุดิบ ({viewingRecipe.items?.length || 0} รายการ)</h4>
