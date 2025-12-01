@@ -1935,6 +1935,53 @@ body.theme-dark .recipe-badge.private {
   color: #f87171;
 }
 
+/* ===================================
+   Admin Delete Button Styles
+   เพิ่มต่อท้าย styles.css หรือ recipes-styles.css
+   =================================== */
+
+/* ปุ่มลบแบบ Admin - สีต่างจากปกติ */
+.recipe-btn.admin-delete {
+  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+  color: white;
+  border: none;
+}
+
+.recipe-btn.admin-delete:hover {
+  background: linear-gradient(135deg, #6d28d9 0%, #4f46e5 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Tooltip สำหรับ admin delete */
+.recipe-btn.admin-delete::after {
+  content: 'ลบในฐานะผู้ดูแล';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.recipe-btn.admin-delete:hover::after {
+  opacity: 1;
+  visibility: visible;
+  bottom: calc(100% + 5px);
+}
+
+/* ทำให้ปุ่มมี position relative สำหรับ tooltip */
+.recipe-btn {
+  position: relative;
+}
 
 
 
