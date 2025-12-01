@@ -50,7 +50,8 @@ const SavedRecipes = () => {
   const { showToast } = useToast();
 
   // ตรวจสอบว่าเป็น admin/mod/owner หรือไม่
-  const isAdminOrMod = ['admin', 'mod', 'owner'].includes(role);
+ const { hasPermission } = useAuth();
+const isAdminOrMod = hasPermission('admin');
 
   // โหลดสูตรแบบ Realtime (ไม่ใช้ orderBy)
   useEffect(() => {
