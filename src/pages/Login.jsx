@@ -9,10 +9,10 @@ import logo1 from '../assets/logo1.png'
 import logo2 from '../assets/logo2.png'
 import logo3 from '../assets/logo3.png'
 
-
 const Login = () => {
-  const [identifier, setIdentifier] = useState('') // username หรือ email
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -21,6 +21,10 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // ป้องกันการ submit ซ้ำ
+    if (loading) return
+    
     setError('')
     setLoading(true)
 
@@ -30,31 +34,32 @@ const Login = () => {
       // ถ้าไม่ได้พิมพ์เครื่องหมาย @ ให้ถือว่าเป็น username
       if (!email.includes('@')) {
         const usersRef = collection(db, 'users')
-        const q = query(usersRef, where('username', '==', email))
+        const q = query(usersRef, where('username', '==', email.toLowerCase()))
         const snapshot = await getDocs(q)
 
         if (snapshot.empty) {
           throw new Error('USERNAME_NOT_FOUND')
         }
 
-        // สมมติว่า username ไม่ซ้ำ → เอา doc แรก
         const userData = snapshot.docs[0].data()
         email = userData.email
       }
 
-      // ล็อกอินด้วย email (จาก username หรือ email ที่พิมพ์มา)
+      // ล็อกอินด้วย email
       await signInWithEmailAndPassword(auth, email, password)
 
-      showToast('เข้าสู่ระบบสำเร็จ', 'success')
+      showToast('เข้าสู่ระบบสำเร็จ 🎉', 'success')
       navigate('/dashboard')
     } catch (err) {
       console.error('Login error:', err)
 
       let message = 'ไม่สามารถเข้าสู่ระบบได้'
       if (err.code === 'auth/user-not-found') {
-        message = 'ไม่พบบัญชีผู้ใช้'
+        message = 'ไม่พบบัญชีผู้ใช้นี้'
       } else if (err.code === 'auth/wrong-password') {
         message = 'รหัสผ่านไม่ถูกต้อง'
+      } else if (err.code === 'auth/invalid-credential') {
+        message = 'ข้อมูลเข้าสู่ระบบไม่ถูกต้อง'
       } else if (err.code === 'auth/too-many-requests') {
         message = 'พยายามเข้าสู่ระบบหลายครั้งเกินไป กรุณาลองใหม่ภายหลัง'
       } else if (err.message === 'USERNAME_NOT_FOUND') {
@@ -69,88 +74,150 @@ const Login = () => {
   }
 
   return (
-  <div className="auth-page">
-    <div className="auth-layout">
-      {/* ฝั่งซ้าย: แนะนำ Nutrition App */}
-      <section className="auth-left">
-        <h1 className="auth-app-name">Nutrition App</h1>
-        <p className="auth-app-desc">
-          เครื่องมือช่วยคำนวณและจัดการข้อมูลคุณค่าทางโภชนาการของวัตถุดิบและเมนูอาหาร
-          เหมาะสำหรับใช้ในการเรียนการสอน งานวิจัย และงานพัฒนาเมนูเพื่อสุขภาพ
-        </p>
-        <ul className="auth-app-points">
-          <li>ค้นหาและดึงข้อมูลโภชนาการมาตรฐาน</li>
-          <li>ปรับปริมาณวัตถุดิบเพื่อดูผลรวมคุณค่าทางโภชนาการ และสามารถส่งออกไฟล์ได้ (xlsx)</li>
-          <li>ฐานข้อมูลที่ได้มาตรฐานจาก สำนักโภชนาการ กรมอนามัย (Thai FCD)</li>
-          <li>ระบบจัดการข้อมูลวัตถุดิบ / เมนู สำหรับผู้ดูแล</li>
-          <li>พัฒนาและแก้ไขโดย ครูศักดิ์สิทธิ์ บำรุง • แผนกวิชาอาหารและโภชนาการ วิทยาลัยอาชีวศึกษาสุโขทัย</li>
-        </ul>
-      </section>
-
-      {/* ฝั่งขวา: ฟอร์มเข้าสู่ระบบ */}
-      <section className="auth-right">
-        <div className="auth-card">
-          {/* โลโก้ 3 อันด้านบน */}
-          <div className="auth-logo-row">
-            <img src={logo1} alt="โลโก้ 1" />
-            <img src={logo2} alt="โลโก้ 2" />
-            <img src={logo3} alt="โลโก้ 3" />
+    <div className="auth-page">
+      <div className="auth-layout">
+        {/* ฝั่งซ้าย: แนะนำ Nutrition App */}
+        <section className="auth-left">
+          <div className="auth-left-content">
+            <h1 className="auth-app-name">
+              <span className="auth-app-icon">🥗</span>
+              Nutrition App
+            </h1>
+            <p className="auth-app-desc">
+              เครื่องมือช่วยคำนวณและจัดการข้อมูลคุณค่าทางโภชนาการของวัตถุดิบและเมนูอาหาร
+              เหมาะสำหรับใช้ในการเรียนการสอน งานวิจัย และงานพัฒนาเมนูเพื่อสุขภาพ
+            </p>
+            <ul className="auth-app-points">
+              <li>
+                <span className="point-icon">🔍</span>
+                <span>ค้นหาและดึงข้อมูลโภชนาการมาตรฐาน</span>
+              </li>
+              <li>
+                <span className="point-icon">📊</span>
+                <span>ปรับปริมาณวัตถุดิบเพื่อดูผลรวมคุณค่าทางโภชนาการ และสามารถส่งออกไฟล์ได้ (xlsx)</span>
+              </li>
+              <li>
+                <span className="point-icon">📚</span>
+                <span>ฐานข้อมูลที่ได้มาตรฐานจาก สำนักโภชนาการ กรมอนามัย (Thai FCD)</span>
+              </li>
+              <li>
+                <span className="point-icon">⚙️</span>
+                <span>ระบบจัดการข้อมูลวัตถุดิบ / เมนู สำหรับผู้ดูแล</span>
+              </li>
+              <li>
+                <span className="point-icon">🎓</span>
+                <span>พัฒนาและแก้ไขโดย ครูศักดิ์สิทธิ์ บำรุง • แผนกวิชาอาหารและโภชนาการ วิทยาลัยอาชีวศึกษาสุโขทัย</span>
+              </li>
+            </ul>
           </div>
+        </section>
 
-          {/* ===== วางฟอร์มเดิมของหน้า Login ตรงนี้ ===== */}
-          {/* 
-            ให้ copy โค้ดเก่าที่อยู่ใน auth-card เดิม เช่น
-            <h1 className="auth-title">เข้าสู่ระบบ</h1>
-            <form ...> ... </form>
-            <div className="auth-links"> ... </div>
-          */}
+        {/* ฝั่งขวา: ฟอร์มเข้าสู่ระบบ */}
+        <section className="auth-right">
+          <div className="auth-card">
+            {/* โลโก้ 3 อันด้านบน */}
+            <div className="auth-logo-row">
+              <img src={logo1} alt="โลโก้ 1" className="auth-logo" />
+              <img src={logo2} alt="โลโก้ 2" className="auth-logo" />
+              <img src={logo3} alt="โลโก้ 3" className="auth-logo" />
+            </div>
 
-          <h1 className="auth-title">เข้าสู่ระบบ</h1>
+            <h1 className="auth-title">
+              <span className="auth-title-icon">👋</span>
+              เข้าสู่ระบบ
+            </h1>
+            <p className="auth-subtitle">ยินดีต้อนรับกลับมา!</p>
 
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <label>
-              Username หรือ อีเมล
-              <input
-                type="text"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="กรอก Username หรืออีเมล"
-                required
-              />
-            </label>
+            {error && (
+              <div className="auth-error">
+                <span className="error-icon">⚠️</span>
+                {error}
+              </div>
+            )}
 
-            <label>
-              รหัสผ่าน
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="กรอกรหัสผ่าน"
-                required
-              />
-            </label>
+            <form className="auth-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label className="form-label">
+                  <span className="label-icon">👤</span>
+                  Username หรือ อีเมล
+                </label>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="กรอก Username หรืออีเมล"
+                    className="form-input"
+                    required
+                    autoComplete="username"
+                  />
+                </div>
+              </div>
 
-            <button type="submit" disabled={loading}>
-              {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
-            </button>
-          </form>
+              <div className="form-group">
+                <label className="form-label">
+                  <span className="label-icon">🔒</span>
+                  รหัสผ่าน
+                </label>
+                <div className="input-wrapper password-wrapper">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="กรอกรหัสผ่าน"
+                    className="form-input"
+                    required
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
+              </div>
 
-          <div className="auth-links">
-            <a href="#/forgot-password">ลืมรหัสผ่าน?</a> ·{' '}
-            <a href="#/register">สมัครสมาชิก</a>
+              <button 
+                type="submit" 
+                className="auth-submit-btn"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="btn-spinner"></span>
+                    กำลังเข้าสู่ระบบ...
+                  </>
+                ) : (
+                  <>
+                    <span className="btn-icon">🚀</span>
+                    เข้าสู่ระบบ
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* ✅ แก้จาก <a href="#/..."> เป็น <Link to="..."> */}
+            <div className="auth-links">
+              <Link to="/forgot-password" className="auth-link">
+                🔑 ลืมรหัสผ่าน?
+              </Link>
+              <span className="auth-link-divider">•</span>
+              <Link to="/register" className="auth-link">
+                ✨ สมัครสมาชิก
+              </Link>
+            </div>
+
+            <div className="auth-footer">
+              <p>© 2024 Nutrition App - วิทยาลัยอาชีวศึกษาสุโขทัย</p>
+            </div>
           </div>
-          {/* ===== จบฟอร์มเดิม ===== */}
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
-  </div>
-)
-
+  )
 }
+
 export default Login
-
-
-
-
-
-
