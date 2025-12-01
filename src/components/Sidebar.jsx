@@ -31,7 +31,7 @@ const Sidebar = () => {
             'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
           }
         >
-          การคำนวณโภชนาการ
+          📟 การคำนวณโภชนาการ
         </NavLink>
 
         <NavLink
@@ -40,10 +40,9 @@ const Sidebar = () => {
             'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
           }
         >
-          ฉลากโภชนาการ (Thai RDI)
+          🧾 ฉลากโภชนาการ (Thai RDI)
         </NavLink>
 
-        {/* เพิ่มเมนูสูตรอาหาร */}
         <NavLink
           to="/dashboard/recipes"
           className={({ isActive }) =>
@@ -53,6 +52,15 @@ const Sidebar = () => {
           📖 สูตรอาหาร
         </NavLink>
 
+        <NavLink
+          to="/dashboard/compare"
+          className={({ isActive }) =>
+            'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
+          }
+        >
+          📊 เปรียบเทียบสูตร
+        </NavLink>
+
         {(role === 'admin' || role === 'owner' || role === 'mod') && (
           <NavLink
             to="/dashboard/manage-items"
@@ -60,7 +68,7 @@ const Sidebar = () => {
               'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
             }
           >
-            เพิ่ม/แก้ไขวัตถุดิบ & เมนู
+            🪛 เพิ่ม/แก้ไขวัตถุดิบ & เมนู
           </NavLink>
         )}
 
@@ -71,7 +79,7 @@ const Sidebar = () => {
               'sidebar-link' + (isActive ? ' sidebar-link-active' : '')
             }
           >
-            คอนโซลสำหรับ Admin
+            🧰 คอนโซลสำหรับ Admin
           </NavLink>
         )}
       </nav>
