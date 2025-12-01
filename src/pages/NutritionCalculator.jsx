@@ -11,51 +11,201 @@ import { useAuth } from '../contexts/AuthContext';
 const NUTRIENT_GROUPS = [
   {
     title: 'กลุ่มที่ 1 สารอาหารหลัก (Main nutrients)',
+    icon: '🍽️',
+    color: '#6366f1',
     keys: [
-      { key: 'energy', label: 'Energy [kcal]' },
-      { key: 'water', label: 'Water [g]' },
-      { key: 'protein', label: 'Protein [g]' },
-      { key: 'fat', label: 'Fat [g]' },
-      { key: 'carb', label: 'Carbohydrate total [g]' },
-      { key: 'fibre', label: 'Dietary fibre (Crud fibre) [g]' },
-      { key: 'ash', label: 'Ash [g]' },
+      { key: 'energy', label: 'Energy [kcal]', icon: '⚡' },
+      { key: 'water', label: 'Water [g]', icon: '💧' },
+      { key: 'protein', label: 'Protein [g]', icon: '🥩' },
+      { key: 'fat', label: 'Fat [g]', icon: '🧈' },
+      { key: 'carb', label: 'Carbohydrate total [g]', icon: '🍚' },
+      { key: 'fibre', label: 'Dietary fibre (Crud fibre) [g]', icon: '🌾' },
+      { key: 'ash', label: 'Ash [g]', icon: 'ite' },
     ],
   },
   {
     title: 'กลุ่มที่ 2 แร่ธาตุ (Minerals)',
+    icon: '💎',
+    color: '#10b981',
     keys: [
-      { key: 'calcium', label: 'Calcium [mg]' },
-      { key: 'phosphorus', label: 'Phosphorus [mg]' },
-      { key: 'magnesium', label: 'Magnesium [mg]' },
-      { key: 'sodium', label: 'Sodium [mg]' },
-      { key: 'potassium', label: 'Potassium [mg]' },
-      { key: 'iron', label: 'Iron [mg]' },
-      { key: 'copper', label: 'Copper [mg]' },
-      { key: 'zinc', label: 'Zinc [mg]' },
-      { key: 'iodine', label: 'Iodine [µg]' },
+      { key: 'calcium', label: 'Calcium [mg]', icon: '🦴' },
+      { key: 'phosphorus', label: 'Phosphorus [mg]', icon: '🔬' },
+      { key: 'magnesium', label: 'Magnesium [mg]', icon: '✨' },
+      { key: 'sodium', label: 'Sodium [mg]', icon: '🧂' },
+      { key: 'potassium', label: 'Potassium [mg]', icon: '🍌' },
+      { key: 'iron', label: 'Iron [mg]', icon: '🔩' },
+      { key: 'copper', label: 'Copper [mg]', icon: '🪙' },
+      { key: 'zinc', label: 'Zinc [mg]', icon: '⚙️' },
+      { key: 'iodine', label: 'Iodine [µg]', icon: '🌊' },
     ],
   },
   {
     title: 'กลุ่มที่ 3 วิตามิน (Vitamins)',
+    icon: '💊',
+    color: '#f59e0b',
     keys: [
-      { key: 'betacarotene', label: 'Betacarotene [µg]' },
-      { key: 'retinol', label: 'Retinol [µg]' },
-      { key: 'vitaminA', label: 'Total Vitamin A (RAE) [µg]' },
-      { key: 'thiamin', label: 'Thiamin (B1) [mg]' },
-      { key: 'riboflavin', label: 'Riboflavin (B2) [mg]' },
-      { key: 'niacin', label: 'Niacin (B3) [mg]' },
-      { key: 'vitaminC', label: 'Vitamin C [mg]' },
-      { key: 'vitaminE', label: 'Vitamin E [mg]' },
+      { key: 'betacarotene', label: 'Betacarotene [µg]', icon: '🥕' },
+      { key: 'retinol', label: 'Retinol [µg]', icon: '👁️' },
+      { key: 'vitaminA', label: 'Total Vitamin A (RAE) [µg]', icon: '🅰️' },
+      { key: 'thiamin', label: 'Thiamin (B1) [mg]', icon: '1️⃣' },
+      { key: 'riboflavin', label: 'Riboflavin (B2) [mg]', icon: '2️⃣' },
+      { key: 'niacin', label: 'Niacin (B3) [mg]', icon: '3️⃣' },
+      { key: 'vitaminC', label: 'Vitamin C [mg]', icon: '🍊' },
+      { key: 'vitaminE', label: 'Vitamin E [mg]', icon: '🌻' },
     ],
   },
   {
     title: 'กลุ่มที่ 4 อื่น ๆ (Other)',
+    icon: '📋',
+    color: '#ec4899',
     keys: [
-      { key: 'sugar', label: 'Sugar [g]' },
-      { key: 'cholessterol', label: 'Cholessterol [mg]' },
+      { key: 'sugar', label: 'Sugar [g]', icon: '🍬' },
+      { key: 'cholessterol', label: 'Cholessterol [mg]', icon: '❤️' },
     ],
   },
 ];
+
+// Quick Stats Component
+const QuickStats = ({ selected, totals }) => {
+  const stats = [
+    { label: 'พลังงาน', value: totals.energy || 0, unit: 'kcal', icon: '⚡', color: '#f59e0b' },
+    { label: 'โปรตีน', value: totals.protein || 0, unit: 'g', icon: '🥩', color: '#ef4444' },
+    { label: 'ไขมัน', value: totals.fat || 0, unit: 'g', icon: '🧈', color: '#eab308' },
+    { label: 'คาร์โบไฮเดรต', value: totals.carb || 0, unit: 'g', icon: '🍚', color: '#22c55e' },
+  ];
+
+  if (selected.length === 0) return null;
+
+  return (
+    <div className="quick-stats">
+      {stats.map((stat) => (
+        <div key={stat.label} className="quick-stat-card" style={{ '--stat-color': stat.color }}>
+          <div className="quick-stat-icon">{stat.icon}</div>
+          <div className="quick-stat-info">
+            <div className="quick-stat-value">
+              {stat.value.toFixed(1)}
+              <span className="quick-stat-unit">{stat.unit}</span>
+            </div>
+            <div className="quick-stat-label">{stat.label}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Empty State Component
+const EmptyState = ({ type }) => {
+  if (type === 'search') {
+    return (
+      <div className="empty-state">
+        <div className="empty-state-icon">🔍</div>
+        <div className="empty-state-text">ไม่พบข้อมูลที่ตรงกับคำค้นหา</div>
+        <div className="empty-state-hint">ลองค้นหาด้วยคำอื่น หรือเปลี่ยนหมวดหมู่</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="empty-state">
+      <div className="empty-state-icon">🥗</div>
+      <div className="empty-state-text">ยังไม่ได้เลือกวัตถุดิบ</div>
+      <div className="empty-state-hint">คลิกที่รายการด้านซ้ายเพื่อเพิ่ม</div>
+    </div>
+  );
+};
+
+// Selected Item Card Component
+const SelectedItemCard = ({ item, index, onUpdateAmount, onRemove }) => {
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  const handleRemove = () => {
+    setIsRemoving(true);
+    setTimeout(() => onRemove(index), 300);
+  };
+
+  return (
+    <div className={`selected-card ${isRemoving ? 'removing' : ''}`}>
+      <div className="selected-card-header">
+        <div className="selected-card-number">{index + 1}</div>
+        <div className="selected-card-info">
+          <div className="selected-card-name">{item.name}</div>
+          {item.nameeng && (
+            <div className="selected-card-nameeng">{item.nameeng}</div>
+          )}
+        </div>
+        <button
+          type="button"
+          className="selected-card-remove"
+          onClick={handleRemove}
+          title="ลบรายการ"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="selected-card-body">
+        <span className="selected-card-category">
+          {item.category || 'ไม่มีหมวดหมู่'}
+        </span>
+        <div className="selected-card-amount">
+          <input
+            type="number"
+            min="0"
+            value={item.amount}
+            onChange={(e) => onUpdateAmount(index, e.target.value)}
+          />
+          <span>กรัม</span>
+        </div>
+      </div>
+
+      <div className="selected-card-nutrients">
+        <span title="พลังงาน">⚡ {((item.nutrients?.energy || 0) * item.amount / 100).toFixed(1)}</span>
+        <span title="โปรตีน">🥩 {((item.nutrients?.protein || 0) * item.amount / 100).toFixed(1)}</span>
+        <span title="ไขมัน">🧈 {((item.nutrients?.fat || 0) * item.amount / 100).toFixed(1)}</span>
+        <span title="คาร์โบไฮเดรต">🍚 {((item.nutrients?.carb || 0) * item.amount / 100).toFixed(1)}</span>
+      </div>
+    </div>
+  );
+};
+
+// Nutrient Group Component
+const NutrientGroup = ({ group, totals, isExpanded, onToggle }) => {
+  return (
+    <div className="nutrient-group">
+      <button
+        type="button"
+        className="nutrient-group-header"
+        onClick={onToggle}
+        style={{ '--group-color': group.color }}
+      >
+        <span className="nutrient-group-icon">{group.icon}</span>
+        <span className="nutrient-group-title">{group.title}</span>
+        <span className={`nutrient-group-toggle ${isExpanded ? 'expanded' : ''}`}>
+          ▼
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className="nutrient-group-content">
+          <div className="nutrient-grid">
+            {group.keys.map((n) => (
+              <div key={n.key} className="nutrient-cell">
+                <div className="nutrient-label">
+                  <span className="nutrient-icon">{n.icon}</span>
+                  {n.label}
+                </div>
+                <div className="nutrient-value">
+                  {totals[n.key] != null ? totals[n.key] : '-'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const NutritionCalculator = () => {
   const [items, setItems] = useState([]);
@@ -65,6 +215,12 @@ const NutritionCalculator = () => {
   const [baseAmount] = useState(100);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
+  const [expandedGroups, setExpandedGroups] = useState({
+    'กลุ่มที่ 1 สารอาหารหลัก (Main nutrients)': true,
+    'กลุ่มที่ 2 แร่ธาตุ (Minerals)': true,
+    'กลุ่มที่ 3 วิตามิน (Vitamins)': true,
+    'กลุ่มที่ 4 อื่น ๆ (Other)': true,
+  });
 
   const { showToast } = useToast();
   const { user, role } = useAuth();
@@ -76,13 +232,15 @@ const NutritionCalculator = () => {
   const [isPublic, setIsPublic] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Animation state
+  const [recentlyAdded, setRecentlyAdded] = useState(null);
+
   // -----------------------------
   // 1) โหลดข้อมูลแบบ Realtime
   // -----------------------------
   useEffect(() => {
     const q = query(collection(db, 'items'), orderBy('name'));
     
-    // ใช้ onSnapshot แทน getDocs เพื่อให้เป็น realtime
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
         const docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -94,7 +252,6 @@ const NutritionCalculator = () => {
       }
     );
 
-    // Cleanup: ยกเลิก listener เมื่อ component unmount
     return () => unsubscribe();
   }, [showToast]);
 
@@ -128,10 +285,18 @@ const NutritionCalculator = () => {
         nutrients: item.nutrients || {},
       },
     ]);
+
+    // Animation feedback
+    setRecentlyAdded(item.id);
+    setTimeout(() => setRecentlyAdded(null), 500);
+
+    showToast(`เพิ่ม "${item.name}" แล้ว`, 'success');
   };
 
   const removeItem = (index) => {
+    const removedName = selected[index]?.name;
     setSelected((prev) => prev.filter((_, i) => i !== index));
+    showToast(`ลบ "${removedName}" แล้ว`, 'info');
   };
 
   const updateAmount = (index, value) => {
@@ -139,6 +304,22 @@ const NutritionCalculator = () => {
     setSelected((prev) =>
       prev.map((s, i) => (i === index ? { ...s, amount: num } : s)),
     );
+  };
+
+  const clearAll = () => {
+    if (selected.length === 0) return;
+    if (window.confirm('ต้องการล้างรายการทั้งหมดใช่ไหม?')) {
+      setSelected([]);
+      showToast('ล้างรายการทั้งหมดแล้ว', 'info');
+    }
+  };
+
+  // Toggle nutrient group
+  const toggleGroup = (title) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
   };
 
   // -----------------------------
@@ -239,7 +420,7 @@ const NutritionCalculator = () => {
       new Blob([wbout], { type: 'application/octet-stream' }),
       'nutrition.xlsx',
     );
-    showToast('Export Excel สำเร็จ', 'success');
+    showToast('Export Excel สำเร็จ 📊', 'success');
   };
 
   // -----------------------------
@@ -297,47 +478,65 @@ const NutritionCalculator = () => {
   // -----------------------------
   return (
     <div className="card nutrition-panel">
-      <h2 className="page-title">การคำนวณคุณค่าทางโภชนาการ</h2>
-      <p className="card-subtitle">
-        หน่วยข้อมูลโภชนาการมาตรฐานต่อ 100 กรัม (kcal, mg, µg, g)
-      </p>
+      {/* Header */}
+      <div className="nutrition-header">
+        <div className="nutrition-header-info">
+          <h2 className="page-title">
+            <span className="title-icon">🧮</span>
+            การคำนวณคุณค่าทางโภชนาการ
+          </h2>
+          <p className="card-subtitle">
+            หน่วยข้อมูลโภชนาการมาตรฐานต่อ 100 กรัม (kcal, mg, µg, g)
+          </p>
+        </div>
+        <div className="nutrition-header-stats">
+          <div className="header-stat">
+            <span className="header-stat-value">{items.length}</span>
+            <span className="header-stat-label">รายการทั้งหมด</span>
+          </div>
+          <div className="header-stat">
+            <span className="header-stat-value">{selected.length}</span>
+            <span className="header-stat-label">เลือกแล้ว</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <QuickStats selected={selected} totals={totals} />
 
       {/* แถวค้นหา */}
       <div className="search-row">
-        <input
-          type="search"
-          placeholder="ค้นหาชื่อวัตถุดิบ / เมนู / หมวด..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="nutrition-search-input"
-        />
+        <div className="search-input-wrapper">
+          <span className="search-icon">🔍</span>
+          <input
+            type="search"
+            placeholder="ค้นหาชื่อวัตถุดิบ / เมนู / หมวด..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="nutrition-search-input"
+          />
+          {search && (
+            <button
+              type="button"
+              className="search-clear"
+              onClick={() => setSearch('')}
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ตัวกรองหมวด + ตัวเลือกจำนวนรายการต่อหน้า */}
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '8px',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '8px',
-          fontSize: '0.85rem',
-        }}
-      >
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          <span>หมวด:</span>
+      <div className="filter-row">
+        <div className="filter-left">
+          <span className="filter-label">หมวด:</span>
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            style={{
-              padding: '4px 8px',
-              borderRadius: '999px',
-              border: '1px solid var(--border)',
-              fontSize: '0.85rem',
-            }}
+            className="filter-select"
           >
-            <option value="all">แสดงทุกหมวด</option>
+            <option value="all">🏷️ แสดงทุกหมวด</option>
             {categories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
@@ -346,72 +545,63 @@ const NutritionCalculator = () => {
           </select>
         </div>
 
-        <div
-          style={{ display: 'flex', gap: '6px', alignItems: 'center' }}
-        >
-          <span>แสดงต่อหน้า:</span>
+        <div className="filter-right">
+          <span className="filter-label">แสดง:</span>
           <select
             value={pageSize}
             onChange={(e) => setPageSize(Number(e.target.value) || 10)}
-            style={{
-              padding: '4px 8px',
-              borderRadius: '999px',
-              border: '1px solid var(--border)',
-              fontSize: '0.85rem',
-            }}
+            className="filter-select"
           >
             <option value={10}>10 รายการ</option>
             <option value={15}>15 รายการ</option>
             <option value={20}>20 รายการ</option>
             <option value={30}>30 รายการ</option>
           </select>
-          <span style={{ color: 'var(--text-muted)' }}>
-            ทั้งหมด {filteredItems.length} รายการ
+          <span className="filter-count">
+            พบ {filteredItems.length} รายการ
           </span>
         </div>
       </div>
 
       <div className="calculator-layout">
         {/* ซ้าย: รายการวัตถุดิบ / เมนู */}
-        <div className="item-list">
-          {pagedItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className="item-row"
-              onClick={() => addItem(item)}
-            >
-              <div className="item-main">
-                <div className="item-name">{item.name}</div>
-                {item.nameeng && (
-                  <div className="item-nameeng">{item.nameeng}</div>
-                )}
-              </div>
+        <div className="item-list-container">
+          <div className="item-list-header">
+            <h3>📋 รายการวัตถุดิบ</h3>
+          </div>
 
-              <div className="item-category-pill">
-                {item.category || 'ไม่มีหมวดหมู่กำหนด'}
-              </div>
+          <div className="item-list">
+            {pagedItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`item-row ${recentlyAdded === item.id ? 'just-added' : ''}`}
+                onClick={() => addItem(item)}
+              >
+                <div className="item-main">
+                  <div className="item-name">{item.name}</div>
+                  {item.nameeng && (
+                    <div className="item-nameeng">{item.nameeng}</div>
+                  )}
+                </div>
 
-              <div className="item-add">เพิ่ม</div>
-            </button>
-          ))}
+                <div className="item-category-pill">
+                  {item.category || 'ไม่มีหมวด'}
+                </div>
 
-          {!pagedItems.length && (
-            <div style={{ padding: '8px 10px', fontSize: '0.85rem' }}>
-              ไม่พบข้อมูลที่ตรงกับคำค้นหา
-            </div>
-          )}
+                <div className="item-add">
+                  <span className="item-add-icon">+</span>
+                  <span className="item-add-text">เพิ่ม</span>
+                </div>
+              </button>
+            ))}
 
+            {!pagedItems.length && <EmptyState type="search" />}
+          </div>
+
+          {/* Pagination */}
           {filteredItems.length > pageSize && (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: '8px',
-                fontSize: '0.8rem',
-              }}
-            >
+            <div className="pagination">
               <button
                 type="button"
                 onClick={goPrev}
@@ -420,7 +610,9 @@ const NutritionCalculator = () => {
               >
                 ◀ ก่อนหน้า
               </button>
-              <span>หน้า {page} / {totalPages}</span>
+              <span className="pagination-info">
+                หน้า <strong>{page}</strong> / {totalPages}
+              </span>
               <button
                 type="button"
                 onClick={goNext}
@@ -434,86 +626,93 @@ const NutritionCalculator = () => {
         </div>
 
         {/* ขวา: รายการที่เลือก + ผลรวม */}
-        <div>
-          <h3 style={{ marginTop: 0 }}>รายการที่เลือกไว้</h3>
+        <div className="selected-container">
+          {/* Header */}
+          <div className="selected-header">
+            <h3>
+              <span>🛒</span> รายการที่เลือก
+              {selected.length > 0 && (
+                <span className="selected-count">{selected.length}</span>
+              )}
+            </h3>
+            {selected.length > 0 && (
+              <button
+                type="button"
+                className="clear-all-btn"
+                onClick={clearAll}
+              >
+                🗑️ ล้างทั้งหมด
+              </button>
+            )}
+          </div>
 
+          {/* Selected Items */}
           <div className="selected-list">
-            {selected.map((item, index) => (
-              <div key={`${item.id}-${index}`} className="selected-row">
-                <div className="selected-name">
-                  <strong>{item.name}</strong>{' '}
-                  {item.nameeng && (
-                    <span className="item-nameeng">
-                      {item.nameeng}
-                    </span>
-                  )}{' '}
-                  <span className="item-meta">
-                    ({item.category || 'ไม่มีหมวดหมู่'})
-                  </span>
-                </div>
-                <input
-                  type="number"
-                  min="0"
-                  value={item.amount}
-                  onChange={(e) =>
-                    updateAmount(index, e.target.value)
-                  }
-                  style={{ width: 80 }}
+            {selected.length === 0 ? (
+              <EmptyState type="selected" />
+            ) : (
+              selected.map((item, index) => (
+                <SelectedItemCard
+                  key={`${item.id}-${index}`}
+                  item={item}
+                  index={index}
+                  onUpdateAmount={updateAmount}
+                  onRemove={removeItem}
                 />
-                <span className="item-meta">กรัม</span>
-                <button type="button" onClick={() => removeItem(index)}>
-                  ลบ
+              ))
+            )}
+          </div>
+
+          {/* Nutrient Summary */}
+          {selected.length > 0 && (
+            <>
+              <div className="nutrient-summary-header">
+                <h3>📊 ผลรวมคุณค่าทางโภชนาการ</h3>
+                <p className="muted">
+                  ปรับปริมาณกรัมของแต่ละวัตถุดิบด้านบน ผลรวมจะอัพเดตอัตโนมัติ
+                </p>
+              </div>
+
+              {NUTRIENT_GROUPS.map((group) => (
+                <NutrientGroup
+                  key={group.title}
+                  group={group}
+                  totals={totals}
+                  isExpanded={expandedGroups[group.title]}
+                  onToggle={() => toggleGroup(group.title)}
+                />
+              ))}
+
+              {/* Action Buttons */}
+              <div className="action-buttons">
+                <button
+                  className="action-btn export-btn"
+                  type="button"
+                  onClick={handleExport}
+                >
+                  <span className="action-btn-icon">📥</span>
+                  <span>Export Excel</span>
+                </button>
+
+                <button
+                  className="action-btn save-btn"
+                  type="button"
+                  onClick={() => setShowSaveModal(true)}
+                  disabled={selected.length === 0}
+                >
+                  <span className="action-btn-icon">💾</span>
+                  <span>บันทึกสูตร</span>
                 </button>
               </div>
-            ))}
-          </div>
-
-          <h3 style={{ marginTop: 16 }}>ผลรวมคุณค่าทางโภชนาการ</h3>
-          <p className="muted">
-            ปรับปริมาณกรัมของแต่ละวัตถุดิบด้านบน ผลรวมจะอัพเดตอัตโนมัติ
-          </p>
-
-          {NUTRIENT_GROUPS.map((group) => (
-            <div key={group.title} style={{ marginTop: 12 }}>
-              <h4 style={{ margin: '4px 0 8px' }}>{group.title}</h4>
-              <div className="nutrient-grid">
-                {group.keys.map((n) => (
-                  <div key={n.key} className="nutrient-cell">
-                    <div className="nutrient-label">{n.label}</div>
-                    <div className="nutrient-value">
-                      {totals[n.key] != null ? totals[n.key] : '-'}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '16px' }}>
-            <button
-              className="primary-btn"
-              type="button"
-              onClick={handleExport}
-            >
-              Export เป็น Excel
-            </button>
-
-            <button
-              className="save-recipe-btn"
-              type="button"
-              onClick={() => setShowSaveModal(true)}
-              disabled={selected.length === 0}
-            >
-              💾 บันทึกสูตร
-            </button>
-          </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* Modal บันทึกสูตร */}
       {showSaveModal && (
         <div className="modal-overlay" onClick={() => setShowSaveModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content save-recipe-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>💾 บันทึกสูตรอาหาร</h3>
               <button
@@ -526,23 +725,25 @@ const NutritionCalculator = () => {
             </div>
 
             <div className="modal-body">
-              <label>
-                ชื่อสูตร *
+              <label className="form-label">
+                <span className="label-text">ชื่อสูตร *</span>
                 <input
                   type="text"
                   value={recipeName}
                   onChange={(e) => setRecipeName(e.target.value)}
                   placeholder="เช่น ก๋วยเตี๋ยวสุโขทัยเสริมโปรตีน"
+                  className="form-input"
                 />
               </label>
 
-              <label>
-                รายละเอียด (ถ้ามี)
+              <label className="form-label">
+                <span className="label-text">รายละเอียด (ถ้ามี)</span>
                 <textarea
                   value={recipeDescription}
                   onChange={(e) => setRecipeDescription(e.target.value)}
                   placeholder="เช่น สูตรทดลองครั้งที่ 1"
                   rows={3}
+                  className="form-input"
                 />
               </label>
 
@@ -552,24 +753,38 @@ const NutritionCalculator = () => {
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
                 />
-                <span>🌐 แชร์เป็นสาธารณะ (ให้คนอื่นเห็นและใช้ได้)</span>
+                <span className="checkbox-text">
+                  🌐 แชร์เป็นสาธารณะ (ให้คนอื่นเห็นและใช้ได้)
+                </span>
               </label>
 
               <div className="recipe-preview">
-                <h4>รายการวัตถุดิบ ({selected.length} รายการ)</h4>
+                <h4>🥗 รายการวัตถุดิบ ({selected.length} รายการ)</h4>
                 <ul>
                   {selected.slice(0, 5).map((item, i) => (
-                    <li key={i}>{item.name} - {item.amount} กรัม</li>
+                    <li key={i}>
+                      <span className="preview-name">{item.name}</span>
+                      <span className="preview-amount">{item.amount} กรัม</span>
+                    </li>
                   ))}
-                  {selected.length > 5 && <li>...และอีก {selected.length - 5} รายการ</li>}
+                  {selected.length > 5 && (
+                    <li className="preview-more">...และอีก {selected.length - 5} รายการ</li>
+                  )}
                 </ul>
+
+                <div className="preview-summary">
+                  <span>⚡ {totals.energy} kcal</span>
+                  <span>🥩 {totals.protein} g</span>
+                  <span>🧈 {totals.fat} g</span>
+                  <span>🍚 {totals.carb} g</span>
+                </div>
               </div>
 
               <div className="modal-footer">
                 <button
                   type="button"
                   onClick={() => setShowSaveModal(false)}
-                  className="cancel-btn"
+                  className="btn-cancel"
                 >
                   ยกเลิก
                 </button>
@@ -577,9 +792,9 @@ const NutritionCalculator = () => {
                   type="button"
                   onClick={handleSaveRecipe}
                   disabled={saving}
-                  className="primary-btn"
+                  className="btn-primary"
                 >
-                  {saving ? 'กำลังบันทึก...' : 'บันทึกสูตร'}
+                  {saving ? '⏳ กำลังบันทึก...' : '💾 บันทึกสูตร'}
                 </button>
               </div>
             </div>
