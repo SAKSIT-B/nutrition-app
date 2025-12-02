@@ -9,7 +9,7 @@ import AdminConsole from './AdminConsole'
 import ThaiRDICalculator from './ThaiRDICalculator'
 import SavedRecipes from './SavedRecipes'
 import CompareRecipes from './CompareRecipes'
-import ProtectedRoute from '../components/ProtectedRoute'
+import VersionChecker from '../components/VersionChecker'
 import { useAuth } from '../contexts/AuthContext'
 
 // หน้า Access Denied
@@ -43,6 +43,9 @@ const Dashboard = () => {
 
   return (
     <div className="layout">
+      {/* ตรวจสอบเวอร์ชันใหม่ */}
+      <VersionChecker />
+      
       <Sidebar />
 
       <div className="layout-main">
