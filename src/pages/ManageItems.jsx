@@ -104,11 +104,17 @@ const NUTRIENT_GROUPS = [
   },
 ];
 
+// รายการสารอาหารแบบ flat สำหรับ Simple Mode
+const ALL_NUTRIENTS = NUTRIENT_GROUPS.flatMap(g => g.fields);
+
 const ManageItems = () => {
   const [items, setItems] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [searchAll, setSearchAll] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // โหมดการแสดงผล
+  const [simpleMode, setSimpleMode] = useState(false);
   
   // Pagination states
   const [page, setPage] = useState(1);
@@ -131,28 +137,17 @@ const ManageItems = () => {
 
   const { showToast } = useToast();
 
-  // -----------------------------
   // โหลดข้อมูลแบบ Realtime
-  // -----------------------------
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, 'items'),
       (snapshot) => {
         let docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-        // เรียงตาม updatedAt ใหม่สุดอยู่บน
         docs.sort((a, b) => {
-          const ta =
-            (a.updatedAt?.toMillis?.()) ||
-            (a.createdAt?.toMillis?.()) ||
-            0;
-          const tb =
-            (b.updatedAt?.toMillis?.()) ||
-            (b.createdAt?.toMillis?.()) ||
-            0;
+          const ta = (a.updatedAt?.toMillis?.()) || (a.createdAt?.toMillis?.()) || 0;
+          const tb = (b.updatedAt?.toMillis?.()) || (b.createdAt?.toMillis?.()) || 0;
           return tb - ta;
         });
-
         setItems(docs);
       },
       (error) => {
@@ -160,7 +155,6 @@ const ManageItems = () => {
         showToast('โหลดข้อมูลไม่สำเร็จ', 'error');
       }
     );
-
     return () => unsubscribe();
   }, [showToast]);
 
@@ -169,9 +163,7 @@ const ManageItems = () => {
     setPage(1);
   }, [searchAll, pageSize]);
 
-  // -----------------------------
   // จัดการโหมดแก้ไข / รีเซ็ตฟอร์ม
-  // -----------------------------
   const startEdit = (item) => {
     setEditingId(item.id);
     setForm({
@@ -181,8 +173,10 @@ const ManageItems = () => {
       category: item.category || '',
       nutrients: { ...EMPTY_NUTRIENTS, ...(item.nutrients || {}) },
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast(`กำลังแก้ไข "${item.name}" ✏️`, 'info');
+    if (!simpleMode) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    showToast(`กำลังแก้ไข "${item.name}"`, 'info');
   };
 
   const resetForm = () => {
@@ -198,33 +192,18 @@ const ManageItems = () => {
 
   // Toggle nutrient group
   const toggleGroup = (groupId) => {
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [groupId]: !prev[groupId],
-    }));
+    setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
   };
 
   const expandAllGroups = () => {
-    setExpandedGroups({
-      main: true,
-      minerals: true,
-      vitamins: true,
-      other: true,
-    });
+    setExpandedGroups({ main: true, minerals: true, vitamins: true, other: true });
   };
 
   const collapseAllGroups = () => {
-    setExpandedGroups({
-      main: false,
-      minerals: false,
-      vitamins: false,
-      other: false,
-    });
+    setExpandedGroups({ main: false, minerals: false, vitamins: false, other: false });
   };
 
-  // -----------------------------
   // handle input ฟอร์ม
-  // -----------------------------
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -236,9 +215,7 @@ const ManageItems = () => {
     }));
   };
 
-  // -----------------------------
   // บันทึกข้อมูล (เพิ่ม / แก้ไข)
-  // -----------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) {
@@ -250,19 +227,15 @@ const ManageItems = () => {
     try {
       if (editingId) {
         const ref = doc(db, 'items', editingId);
-        await updateDoc(ref, {
-          ...form,
-          updatedAt: serverTimestamp(),
-        });
-        showToast('อัพเดทข้อมูลสำเร็จ 🥗', 'success');
+        await updateDoc(ref, { ...form, updatedAt: serverTimestamp() });
+        showToast('อัพเดทข้อมูลสำเร็จ', 'success');
       } else {
         await addDoc(collection(db, 'items'), {
           ...form,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
-        showToast('เพิ่มข้อมูลสำเร็จ ✨', 'success');
-        // กลับไปหน้าแรกเพื่อเห็นรายการใหม่
+        showToast('เพิ่มข้อมูลสำเร็จ', 'success');
         setPage(1);
       }
       resetForm();
@@ -274,23 +247,19 @@ const ManageItems = () => {
     }
   };
 
-  // -----------------------------
   // ลบข้อมูล
-  // -----------------------------
   const handleDelete = async (item) => {
     if (!window.confirm(`ต้องการลบ "${item.name}" ใช่ไหม?`)) return;
     try {
       await deleteDoc(doc(db, 'items', item.id));
-      showToast('ลบข้อมูลสำเร็จ 🗑️', 'success');
+      showToast('ลบข้อมูลสำเร็จ', 'success');
     } catch (e) {
       console.error(e);
       showToast('ลบข้อมูลไม่สำเร็จ', 'error');
     }
   };
 
-  // -----------------------------
   // filter สำหรับช่องค้นหา
-  // -----------------------------
   const filteredItems = useMemo(() => {
     const q = searchAll.trim().toLowerCase();
     if (!q) return items;
@@ -299,18 +268,11 @@ const ManageItems = () => {
       const nameeng = (item.nameeng || '').toLowerCase();
       const cat = (item.category || '').toLowerCase();
       const desc = (item.description || '').toLowerCase();
-      return (
-        name.includes(q) ||
-        nameeng.includes(q) ||
-        cat.includes(q) ||
-        desc.includes(q)
-      );
+      return name.includes(q) || nameeng.includes(q) || cat.includes(q) || desc.includes(q);
     });
   }, [items, searchAll]);
 
-  // -----------------------------
   // Pagination
-  // -----------------------------
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
   const startIndex = (page - 1) * pageSize;
   const endIndex = startIndex + pageSize;
@@ -321,9 +283,136 @@ const ManageItems = () => {
   const goFirst = () => setPage(1);
   const goLast = () => setPage(totalPages);
 
-  // -----------------------------
-  // render
-  // -----------------------------
+  // ===========================================
+  // Simple Mode UI
+  // ===========================================
+  if (simpleMode) {
+    return (
+      <div className="simple-mode-container">
+        {/* Header */}
+        <div className="simple-mode-header">
+          <h2>เพิ่มวัตถุดิบ / เมนู</h2>
+          <button 
+            type="button" 
+            className="simple-mode-toggle"
+            onClick={() => setSimpleMode(false)}
+          >
+            กลับโหมดปกติ
+          </button>
+        </div>
+
+        {/* แสดงสถานะแก้ไข */}
+        {editingId && (
+          <div className="simple-editing-status">
+            กำลังแก้ไข: {form.name}
+            <button type="button" onClick={resetForm}>ยกเลิก</button>
+          </div>
+        )}
+
+        {/* ฟอร์มกรอกข้อมูล */}
+        <form onSubmit={handleSubmit} className="simple-form">
+          <div className="simple-form-section">
+            <h3>ข้อมูลพื้นฐาน</h3>
+            <div className="simple-form-grid">
+              <div className="simple-field">
+                <label>ชื่อวัตถุดิบ / เมนู (ไทย) *</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  placeholder="เช่น ก๋วยเตี๋ยว เส้นจันทน์ แห้ง"
+                  required
+                />
+              </div>
+              <div className="simple-field">
+                <label>ชื่อวัตถุดิบ / เมนู (อังกฤษ)</label>
+                <input
+                  type="text"
+                  value={form.nameeng}
+                  onChange={(e) => handleChange('nameeng', e.target.value)}
+                  placeholder="ex. Noodle, rice, dried"
+                />
+              </div>
+              <div className="simple-field">
+                <label>หมวด / ประเภท</label>
+                <input
+                  type="text"
+                  value={form.category}
+                  onChange={(e) => handleChange('category', e.target.value)}
+                  placeholder="เช่น ธัญพืชและผลิตภัณฑ์"
+                />
+              </div>
+              <div className="simple-field">
+                <label>หมายเหตุ</label>
+                <input
+                  type="text"
+                  value={form.description}
+                  onChange={(e) => handleChange('description', e.target.value)}
+                  placeholder="หมายเหตุ (ถ้ามี)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="simple-form-section">
+            <h3>สารอาหาร (ต่อ 100 กรัม)</h3>
+            <div className="simple-nutrients-grid">
+              {ALL_NUTRIENTS.map((field) => (
+                <div key={field.key} className="simple-nutrient-field">
+                  <label>{field.label}</label>
+                  <input
+                    type="text"
+                    value={form.nutrients[field.key]}
+                    onChange={(e) => handleNutrientChange(field.key, e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="simple-form-actions">
+            <button type="submit" disabled={loading}>
+              {loading ? 'กำลังบันทึก...' : editingId ? 'บันทึกการแก้ไข' : 'เพิ่มรายการ'}
+            </button>
+            {editingId && (
+              <button type="button" onClick={resetForm}>
+                ยกเลิก
+              </button>
+            )}
+          </div>
+        </form>
+
+        {/* รายการล่าสุด */}
+        <div className="simple-recent-section">
+          <h3>รายการล่าสุด ({items.length} รายการ)</h3>
+          <div className="simple-recent-list">
+            {items.slice(0, 20).map((item, idx) => (
+              <div 
+                key={item.id} 
+                className={`simple-recent-item ${editingId === item.id ? 'editing' : ''}`}
+              >
+                <span className="simple-item-num">{idx + 1}</span>
+                <span className="simple-item-name">{item.name}</span>
+                <span className="simple-item-cat">{item.category || '-'}</span>
+                <div className="simple-item-actions">
+                  <button type="button" onClick={() => startEdit(item)}>แก้ไข</button>
+                  <button type="button" onClick={() => handleDelete(item)}>ลบ</button>
+                </div>
+              </div>
+            ))}
+            {items.length === 0 && (
+              <div className="simple-empty">ยังไม่มีรายการ</div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===========================================
+  // Normal Mode UI (โหมดปกติ)
+  // ===========================================
   return (
     <div className="card manage-items-page">
       {/* Header */}
@@ -337,7 +426,14 @@ const ManageItems = () => {
             ข้อมูลคุณค่าทางโภชนาการต่อ 100 กรัม ตามหน่วยที่กำหนด (อัพเดท Realtime)
           </p>
         </div>
-        <div className="manage-header-stats">
+        <div className="manage-header-actions">
+          <button 
+            type="button" 
+            className="mode-toggle-btn"
+            onClick={() => setSimpleMode(true)}
+          >
+            📋 โหมดเรียบง่าย
+          </button>
           <div className="header-stat">
             <span className="header-stat-value">{items.length}</span>
             <span className="header-stat-label">รายการทั้งหมด</span>
@@ -566,7 +662,6 @@ const ManageItems = () => {
             <span className="items-count">{filteredItems.length}</span>
           </h3>
           
-          {/* Pagination Info */}
           {filteredItems.length > pageSize && (
             <div className="pagination-info-top">
               แสดง {startIndex + 1} - {Math.min(endIndex, filteredItems.length)} จาก {filteredItems.length}
@@ -653,7 +748,6 @@ const ManageItems = () => {
               </button>
               
               <div className="pagination-pages">
-                {/* แสดงเลขหน้า */}
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum;
                   if (totalPages <= 5) {
