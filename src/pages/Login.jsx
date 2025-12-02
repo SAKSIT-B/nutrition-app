@@ -1,9 +1,10 @@
 // src/pages/Login.jsx
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { auth, db } from '../firebase'
+import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import logo1 from '../assets/logo1.png'
 import logo2 from '../assets/logo2.png'
@@ -18,6 +19,14 @@ const Login = () => {
 
   const navigate = useNavigate()
   const { showToast } = useToast()
+  const { user, loading: authLoading } = useAuth()
+
+  // ✅ เมื่อ user มีค่า (login สำเร็จ) ให้ navigate ไป dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, authLoading, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -48,8 +57,9 @@ const Login = () => {
       // ล็อกอินด้วย email
       await signInWithEmailAndPassword(auth, email, password)
 
+      // ✅ ไม่ต้อง navigate ที่นี่ - useEffect ด้านบนจะจัดการให้
       showToast('เข้าสู่ระบบสำเร็จ 🎉', 'success')
-      navigate('/dashboard')
+      
     } catch (err) {
       console.error('Login error:', err)
 
@@ -68,9 +78,21 @@ const Login = () => {
 
       setError(message)
       showToast(message, 'error')
-    } finally {
       setLoading(false)
     }
+    // ✅ ไม่ต้อง setLoading(false) ใน finally เพราะถ้าสำเร็จจะ navigate ออกไป
+  }
+
+  // ✅ แสดง loading ขณะเช็ค auth state ตอนเริ่มต้น
+  if (authLoading) {
+    return (
+      <div className="auth-page">
+        <div className="auth-loading">
+          <div className="loader"></div>
+          <p>กำลังตรวจสอบ...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -150,6 +172,7 @@ const Login = () => {
                     className="form-input"
                     required
                     autoComplete="username"
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -168,6 +191,7 @@ const Login = () => {
                     className="form-input"
                     required
                     autoComplete="current-password"
+                    disabled={loading}
                   />
                   <button
                     type="button"
@@ -199,7 +223,6 @@ const Login = () => {
               </button>
             </form>
 
-            {/* ✅ แก้จาก <a href="#/..."> เป็น <Link to="..."> */}
             <div className="auth-links">
               <Link to="/forgot-password" className="auth-link">
                 🔑 ลืมรหัสผ่าน?
@@ -211,7 +234,7 @@ const Login = () => {
             </div>
 
             <div className="auth-footer">
-              <p>© 2024 Nutrition App - ครูศักดิ์สิทธิ์ บำรุง</p>
+              <p>© 2024 Nutrition App - วิทยาลัยอาชีวศึกษาสุโขทัย</p>
             </div>
           </div>
         </section>
@@ -221,4 +244,3 @@ const Login = () => {
 }
 
 export default Login
-
