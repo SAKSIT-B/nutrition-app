@@ -12,6 +12,7 @@ import CompareRecipes from './CompareRecipes'
 import VersionChecker from '../components/VersionChecker'
 import { useAuth } from '../contexts/AuthContext'
 import StatisticsAnalysis from './StatisticsAnalysis'
+import SensoryEvaluation from './SensoryEvaluation'
 
 // หน้า Access Denied
 const AccessDenied = () => (
@@ -129,12 +130,24 @@ const Dashboard = () => {
               }
             />
             
- {/* ในส่วน Routes */}
+ {/* วิเคราะห์สถิติ */}
 <Route
   path="statistics"
   element={
     hasPermission('nutrition') ? (
       <StatisticsAnalysis />
+    ) : (
+      <AccessDenied />
+    )
+  }
+/>
+
+            {/* วิเคราะห์ทางประสาทสัมผัส */}
+            <Route
+  path="sensory"
+  element={
+    hasPermission('nutrition') ? (
+      <SensoryEvaluation />
     ) : (
       <AccessDenied />
     )
@@ -151,4 +164,5 @@ const Dashboard = () => {
 }
 
 export default Dashboard
+
 
