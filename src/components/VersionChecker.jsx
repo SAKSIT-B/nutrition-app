@@ -2,12 +2,20 @@
 // ตรวจสอบเวอร์ชันใหม่และแจ้งเตือนให้รีเฟรช
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 // เวอร์ชันปัจจุบัน - เปลี่ยนทุกครั้งที่ deploy
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.0.1';
 const CHECK_INTERVAL = 5 * 60 * 1000; // ตรวจสอบทุก 5 นาที
 
+// เปิด/ปิด Dev Mode (ปุ่มทดสอบ - แสดงเฉพาะ Owner)
+const DEV_MODE = true; // เปิดไว้ได้เลย เพราะแสดงเฉพาะ Owner
+
 const VersionChecker = () => {
+  const { role } = useAuth();
+  
+  // Dev Mode แสดงเฉพาะ Owner เท่านั้น
+  const showDevTools = DEV_MODE && role === 'owner';
   const [showUpdateBanner, setShowUpdateBanner] = useState(false);
   const [updateDismissed, setUpdateDismissed] = useState(false);
 
@@ -42,9 +50,13 @@ const VersionChecker = () => {
       // ถ้า scripts ต่างกัน = มี version ใหม่
       if (currentScripts && newScripts && currentScripts !== newScripts) {
         console.log('🔄 พบเวอร์ชันใหม่!');
+        console.log('Current:', currentScripts);
+        console.log('New:', newScripts);
         if (!updateDismissed) {
           setShowUpdateBanner(true);
         }
+      } else {
+        console.log('✅ เวอร์ชันปัจจุบันเป็นล่าสุดแล้ว');
       }
     } catch (error) {
       console.log('Version check failed:', error);
@@ -102,25 +114,55 @@ const VersionChecker = () => {
     setTimeout(() => setUpdateDismissed(false), 30 * 60 * 1000);
   };
 
-  if (!showUpdateBanner) return null;
+  // ปุ่มทดสอบ (แสดงเฉพาะ DEV_MODE)
+  const handleTestBanner = () => {
+    setShowUpdateBanner(true);
+  };
 
   return (
-    <div className="version-update-banner">
-      <div className="update-content">
-        <span className="update-icon">🔄</span>
-        <span className="update-text">
-          มีเวอร์ชันใหม่พร้อมใช้งาน! รีเฟรชเพื่ออัพเดท
-        </span>
-      </div>
-      <div className="update-actions">
-        <button className="update-btn refresh" onClick={handleRefresh}>
-          🔃 รีเฟรชเลย
+    <>
+      {/* Dev Mode: ปุ่มทดสอบ (แสดงเฉพาะ Owner) */}
+      {showDevTools && !showUpdateBanner && (
+        <button
+          onClick={handleTestBanner}
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            padding: '10px 16px',
+            background: '#6366f1',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            zIndex: 9998,
+            fontSize: '14px',
+          }}
+        >
+          🧪 ทดสอบ Banner
         </button>
-        <button className="update-btn dismiss" onClick={handleDismiss}>
-          ✕
-        </button>
-      </div>
-    </div>
+      )}
+
+      {/* Banner แจ้งเตือน */}
+      {showUpdateBanner && (
+        <div className="version-update-banner">
+          <div className="update-content">
+            <span className="update-icon">🔄</span>
+            <span className="update-text">
+              มีเวอร์ชันใหม่พร้อมใช้งาน! รีเฟรชเพื่ออัพเดท
+            </span>
+          </div>
+          <div className="update-actions">
+            <button className="update-btn refresh" onClick={handleRefresh}>
+              🔃 รีเฟรชเลย
+            </button>
+            <button className="update-btn dismiss" onClick={handleDismiss}>
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
