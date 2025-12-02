@@ -39,6 +39,14 @@ const MENU_ITEMS = [
   icon: '📊',
   permission: 'nutrition'
 },
+
+{ 
+  path: '/dashboard/sensory', 
+  label: 'วิเคราะห์ทางประสาทสัมผัส', 
+  icon: '🧪',
+  permission: 'nutrition'
+},
+  
   {
     path: '/dashboard/manage-items',
     label: 'เพิ่ม/แก้ไขวัตถุดิบ & เมนู',
@@ -112,4 +120,5 @@ const Sidebar = () => {
 }
 
 export default Sidebar
+
 
