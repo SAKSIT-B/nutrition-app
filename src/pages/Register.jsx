@@ -1,9 +1,10 @@
 // src/pages/Register.jsx
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { auth, db } from '../firebase'
 import { doc, setDoc, serverTimestamp, getDocs, query, collection, where } from 'firebase/firestore'
+import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import logo1 from '../assets/logo1.png'
 import logo2 from '../assets/logo2.png'
@@ -12,6 +13,8 @@ import logo3 from '../assets/logo3.png'
 const Register = () => {
   const navigate = useNavigate()
   const { showToast } = useToast()
+  const { user, loading: authLoading } = useAuth()
+  
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
@@ -20,6 +23,13 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // ✅ เมื่อ user มีค่า (register สำเร็จ) ให้ navigate ไป dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, authLoading, navigate])
 
   // ตรวจสอบความแข็งแรงของรหัสผ่าน
   const getPasswordStrength = () => {
@@ -104,8 +114,9 @@ const Register = () => {
         createdAt: serverTimestamp(),
       })
 
+      // ✅ ไม่ต้อง navigate ที่นี่ - useEffect ด้านบนจะจัดการให้
       showToast('สมัครสมาชิกสำเร็จ 🎉', 'success')
-      navigate('/dashboard')
+      
     } catch (err) {
       console.error(err)
       
@@ -120,9 +131,20 @@ const Register = () => {
       
       setError(message)
       showToast('สมัครสมาชิกไม่สำเร็จ', 'error')
-    } finally {
       setLoading(false)
     }
+  }
+
+  // ✅ แสดง loading ขณะเช็ค auth state ตอนเริ่มต้น
+  if (authLoading) {
+    return (
+      <div className="auth-page">
+        <div className="auth-loading">
+          <div className="loader"></div>
+          <p>กำลังตรวจสอบ...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -191,6 +213,7 @@ const Register = () => {
                     className="form-input"
                     required
                     autoComplete="username"
+                    disabled={loading}
                   />
                 </div>
                 <span className="input-hint">ใช้ตัวอักษร ตัวเลข และ _ เท่านั้น</span>
@@ -209,6 +232,7 @@ const Register = () => {
                     placeholder="เช่น สมชาย ใจดี"
                     className="form-input"
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -227,6 +251,7 @@ const Register = () => {
                     className="form-input"
                     required
                     autoComplete="email"
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -245,6 +270,7 @@ const Register = () => {
                     className="form-input"
                     required
                     autoComplete="new-password"
+                    disabled={loading}
                   />
                   <button
                     type="button"
@@ -287,6 +313,7 @@ const Register = () => {
                     className="form-input"
                     required
                     autoComplete="new-password"
+                    disabled={loading}
                   />
                   {confirmPassword && (
                     <span className="password-match">
