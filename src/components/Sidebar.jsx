@@ -32,6 +32,13 @@ const MENU_ITEMS = [
     icon: '📊',
     permission: 'compare',
   },
+
+{ 
+  path: '/dashboard/statistics', 
+  label: 'วิเคราะห์สถิติ', 
+  icon: '📊',
+  permission: 'nutrition'
+},
   {
     path: '/dashboard/manage-items',
     label: 'เพิ่ม/แก้ไขวัตถุดิบ & เมนู',
@@ -105,3 +112,4 @@ const Sidebar = () => {
 }
 
 export default Sidebar
+
