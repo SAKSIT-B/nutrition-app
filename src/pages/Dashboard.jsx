@@ -11,6 +11,7 @@ import SavedRecipes from './SavedRecipes'
 import CompareRecipes from './CompareRecipes'
 import VersionChecker from '../components/VersionChecker'
 import { useAuth } from '../contexts/AuthContext'
+import StatisticsAnalysis from './StatisticsAnalysis'
 
 // หน้า Access Denied
 const AccessDenied = () => (
@@ -127,7 +128,19 @@ const Dashboard = () => {
                 )
               }
             />
-
+            
+ {/* ในส่วน Routes */}
+<Route
+  path="statistics"
+  element={
+    hasPermission('nutrition') ? (
+      <StatisticsAnalysis />
+    ) : (
+      <AccessDenied />
+    )
+  }
+/>
+            
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -138,3 +151,4 @@ const Dashboard = () => {
 }
 
 export default Dashboard
+
