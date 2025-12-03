@@ -11643,9 +11643,10 @@ body.theme-dark .recipe-badge.private {
 
 
 /* ===================================
-   Topbar with Fixed Layout v3
-   - พื้นหลังสีขาว (ไม่ใส)
-   - ข้อความวิ่งแสดงครบ
+   Topbar Styles - Fixed Version
+   - พื้นหลัง Topbar สีขาว (ไม่โปร่งใส)
+   - ป้ายประกาศ gradient สวยๆ
+   - ข้อความวิ่งครบไม่เด้งกลับ
    =================================== */
 
 /* Topbar Layout */
@@ -11654,13 +11655,19 @@ body.theme-dark .recipe-badge.private {
   grid-template-columns: 200px 1fr 280px;
   align-items: center;
   padding: 12px 24px;
-  background: var(--card-bg);
-  border-bottom: 1px solid var(--border);
+  /* พื้นหลังสีขาว ไม่โปร่งใส */
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
   z-index: 100;
   gap: 16px;
   min-height: 64px;
+}
+
+[data-theme="dark"] .topbar {
+  background-color: #1e1e2e !important;
+  border-bottom-color: #3f3f5f;
 }
 
 .topbar-left {
@@ -11682,7 +11689,7 @@ body.theme-dark .recipe-badge.private {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 36px;
+  min-height: 38px;
 }
 
 .topbar-right {
@@ -11692,126 +11699,109 @@ body.theme-dark .recipe-badge.private {
   gap: 12px;
 }
 
-/* ==================== ANNOUNCEMENT ==================== */
+/* ==================== ANNOUNCEMENT - GRADIENT สวยๆ ==================== */
 
 .topbar-announcement {
   width: 100%;
   max-width: 500px;
   height: 38px;
-  /* พื้นหลังสีขาว + gradient border */
-  background: #ffffff;
-  border: 2px solid transparent;
-  background-image: linear-gradient(#ffffff, #ffffff), 
-                    linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+  /* Gradient สวยๆ แบบเดิม */
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7, #6366f1);
+  background-size: 300% 100%;
+  animation: gradientShift 8s ease infinite;
   border-radius: 20px;
   overflow: hidden;
   position: relative;
   display: flex;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
 }
 
-[data-theme="dark"] .topbar-announcement {
-  background: #1e1e2e;
-  background-image: linear-gradient(#1e1e2e, #1e1e2e), 
-                    linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .topbar-announcement:hover {
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
 }
 
 /* ปุ่มปิด */
 .announcement-close-btn {
   position: absolute;
-  left: 6px;
+  left: 8px;
   z-index: 10;
   width: 24px;
   height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f3f4f6;
+  background: rgba(255, 255, 255, 0.2);
   border: none;
   border-radius: 50%;
-  color: #6b7280;
+  color: white;
   font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
 }
 
-[data-theme="dark"] .announcement-close-btn {
-  background: #374151;
-  color: #9ca3af;
-}
-
 .announcement-close-btn:hover {
-  background: #e5e7eb;
-  color: #374151;
+  background: rgba(255, 255, 255, 0.35);
   transform: scale(1.1);
 }
 
-[data-theme="dark"] .announcement-close-btn:hover {
-  background: #4b5563;
-  color: #f3f4f6;
-}
-
-/* Wrapper สำหรับ overflow */
+/* Wrapper สำหรับ overflow - สำคัญมาก! */
 .announcement-track-wrapper {
   flex: 1;
   overflow: hidden;
-  margin: 0 36px;
+  margin: 0 40px;
+  position: relative;
 }
 
-/* ข้อความวิ่ง */
+/* ข้อความวิ่ง - แก้ไขให้วิ่งครบไม่เด้งกลับ */
 .announcement-track {
-  display: flex;
-  animation: marqueeScroll 25s linear infinite;
+  display: inline-flex;
   white-space: nowrap;
+  animation: marqueeScroll var(--marquee-duration, 30s) linear infinite;
 }
 
 .topbar-announcement.paused .announcement-track {
   animation-play-state: paused;
 }
 
+/* Animation ที่ถูกต้อง - วิ่งจนครบแล้วค่อยวน */
 @keyframes marqueeScroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .announcement-text {
-  color: #6366f1;
+  color: white;
   font-size: 0.85rem;
   font-weight: 600;
-  flex-shrink: 0;
-}
-
-[data-theme="dark"] .announcement-text {
-  color: #a5b4fc;
-}
-
-.announcement-spacer {
-  width: 80px;
-  flex-shrink: 0;
+  padding-right: 100px; /* ระยะห่างระหว่างข้อความซ้ำ */
+  display: inline-block;
 }
 
 /* ปุ่มแก้ไข */
 .announcement-edit-btn {
   position: absolute;
-  right: 6px;
+  right: 8px;
   z-index: 10;
   width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: rgba(255, 255, 255, 0.2);
   border: none;
   border-radius: 8px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
   opacity: 0;
@@ -11823,8 +11813,8 @@ body.theme-dark .recipe-badge.private {
 }
 
 .announcement-edit-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
   transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
 }
 
 /* Placeholder */
@@ -11837,12 +11827,12 @@ body.theme-dark .recipe-badge.private {
 
 .announcement-enable-btn,
 .announcement-show-btn {
-  padding: 8px 18px;
+  padding: 10px 20px;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
   border: none;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -11863,8 +11853,8 @@ body.theme-dark .recipe-badge.private {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
   cursor: pointer;
   font-size: 1.2rem;
@@ -11872,9 +11862,18 @@ body.theme-dark .recipe-badge.private {
   flex-shrink: 0;
 }
 
+[data-theme="dark"] .topbar-icon-btn {
+  background: #2a2a3c;
+  border-color: #3f3f5f;
+}
+
 .topbar-icon-btn:hover {
-  background: var(--border);
+  background: #e5e7eb;
   transform: scale(1.05);
+}
+
+[data-theme="dark"] .topbar-icon-btn:hover {
+  background: #3f3f5f;
 }
 
 .topbar-user-dropdown {
@@ -11886,22 +11885,31 @@ body.theme-dark .recipe-badge.private {
   align-items: center;
   gap: 10px;
   padding: 6px 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
+[data-theme="dark"] .topbar-user-btn {
+  background: #2a2a3c;
+  border-color: #3f3f5f;
+}
+
 .topbar-user-btn:hover {
-  background: var(--border);
+  background: #e5e7eb;
+}
+
+[data-theme="dark"] .topbar-user-btn:hover {
+  background: #3f3f5f;
 }
 
 .topbar-user-avatar {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary), #8b5cf6);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11922,21 +11930,29 @@ body.theme-dark .recipe-badge.private {
 .topbar-user-name {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text);
+  color: #1f2937;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100px;
 }
 
+[data-theme="dark"] .topbar-user-name {
+  color: #f3f4f6;
+}
+
 .topbar-user-role {
   font-size: 0.7rem;
-  color: var(--text-muted);
+  color: #6b7280;
+}
+
+[data-theme="dark"] .topbar-user-role {
+  color: #9ca3af;
 }
 
 .topbar-dropdown-arrow {
   font-size: 0.6rem;
-  color: var(--text-muted);
+  color: #6b7280;
   transition: transform 0.2s;
 }
 
@@ -11951,7 +11967,7 @@ body.theme-dark .recipe-badge.private {
   right: 0;
   width: 250px;
   background-color: #ffffff;
-  border: 1px solid var(--border);
+  border: 1px solid #e5e7eb;
   border-radius: 14px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   overflow: hidden;
@@ -11961,6 +11977,7 @@ body.theme-dark .recipe-badge.private {
 
 [data-theme="dark"] .topbar-dropdown-menu {
   background-color: #1e1e2e;
+  border-color: #3f3f5f;
 }
 
 @keyframes dropdownFadeIn {
@@ -11984,7 +12001,7 @@ body.theme-dark .recipe-badge.private {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary), #8b5cf6);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12025,8 +12042,12 @@ body.theme-dark .recipe-badge.private {
 
 .dropdown-divider {
   height: 1px;
-  background: var(--border);
+  background: #e5e7eb;
   margin: 4px 0;
+}
+
+[data-theme="dark"] .dropdown-divider {
+  background: #3f3f5f;
 }
 
 .dropdown-item {
@@ -12097,9 +12118,12 @@ body.theme-dark .recipe-badge.private {
   border-radius: 20px;
   width: 90%;
   max-width: 500px;
+  max-height: 90vh;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 [data-theme="dark"] .announcement-modal {
@@ -12118,6 +12142,7 @@ body.theme-dark .recipe-badge.private {
   padding: 18px 22px;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
+  flex-shrink: 0;
 }
 
 .modal-header h3 {
@@ -12149,6 +12174,8 @@ body.theme-dark .recipe-badge.private {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .modal-body .form-group {
@@ -12160,7 +12187,11 @@ body.theme-dark .recipe-badge.private {
 .modal-body label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text, #1f2937);
+  color: #1f2937;
+}
+
+[data-theme="dark"] .modal-body label {
+  color: #f3f4f6;
 }
 
 .modal-body textarea {
@@ -12242,7 +12273,11 @@ body.theme-dark .recipe-badge.private {
 
 .toggle-label {
   font-size: 0.85rem;
-  color: var(--text, #1f2937);
+  color: #1f2937;
+}
+
+[data-theme="dark"] .toggle-label {
+  color: #f3f4f6;
 }
 
 /* Preview - แสดงข้อความแบบ wrap */
@@ -12252,8 +12287,8 @@ body.theme-dark .recipe-badge.private {
   padding: 14px 16px;
   color: white;
   font-size: 0.85rem;
-  line-height: 1.5;
-  max-height: 100px;
+  line-height: 1.6;
+  max-height: 120px;
   overflow-y: auto;
 }
 
@@ -12270,6 +12305,7 @@ body.theme-dark .recipe-badge.private {
   padding: 14px 22px;
   background: #f9fafb;
   border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
 }
 
 [data-theme="dark"] .modal-footer {
@@ -12382,5 +12418,6 @@ body.theme-dark .recipe-badge.private {
     max-width: 100%;
   }
 }
+
 
 
