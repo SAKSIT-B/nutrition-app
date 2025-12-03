@@ -3,16 +3,18 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Topbar from '../components/Topbar'
+import HomeOverview from './HomeOverview'
 import NutritionCalculator from './NutritionCalculator'
 import ManageItems from './ManageItems'
 import AdminConsole from './AdminConsole'
 import ThaiRDICalculator from './ThaiRDICalculator'
 import SavedRecipes from './SavedRecipes'
 import CompareRecipes from './CompareRecipes'
-import VersionChecker from '../components/VersionChecker'
-import { useAuth } from '../contexts/AuthContext'
 import StatisticsAnalysis from './StatisticsAnalysis'
 import SensoryEvaluation from './SensoryEvaluation'
+import ProfileSettings from './ProfileSettings'
+import VersionChecker from '../components/VersionChecker'
+import { useAuth } from '../contexts/AuthContext'
 
 // หน้า Access Denied
 const AccessDenied = () => (
@@ -55,8 +57,14 @@ const Dashboard = () => {
 
         <div className="layout-content">
           <Routes>
-            {/* Default redirect */}
-            <Route path="/" element={<Navigate to="nutrition" />} />
+            {/* Default redirect ไปหน้า Home */}
+            <Route path="/" element={<Navigate to="home" />} />
+
+            {/* หน้าหลัก (Home Overview) */}
+            <Route path="home" element={<HomeOverview />} />
+
+            {/* หน้าตั้งค่าโปรไฟล์ */}
+            <Route path="profile" element={<ProfileSettings />} />
 
             {/* หน้าคำนวณโภชนาการ */}
             <Route
@@ -129,31 +137,31 @@ const Dashboard = () => {
                 )
               }
             />
-            
- {/* วิเคราะห์สถิติ */}
-<Route
-  path="statistics"
-  element={
-    hasPermission('nutrition') ? (
-      <StatisticsAnalysis />
-    ) : (
-      <AccessDenied />
-    )
-  }
-/>
+
+            {/* วิเคราะห์สถิติ */}
+            <Route
+              path="statistics"
+              element={
+                hasPermission('nutrition') ? (
+                  <StatisticsAnalysis />
+                ) : (
+                  <AccessDenied />
+                )
+              }
+            />
 
             {/* วิเคราะห์ทางประสาทสัมผัส */}
             <Route
-  path="sensory"
-  element={
-    hasPermission('nutrition') ? (
-      <SensoryEvaluation />
-    ) : (
-      <AccessDenied />
-    )
-  }
-/>
-            
+              path="sensory"
+              element={
+                hasPermission('nutrition') ? (
+                  <SensoryEvaluation />
+                ) : (
+                  <AccessDenied />
+                )
+              }
+            />
+
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -164,5 +172,3 @@ const Dashboard = () => {
 }
 
 export default Dashboard
-
-
