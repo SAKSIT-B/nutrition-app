@@ -6,13 +6,13 @@ import logo1 from '../assets/logo1.png'
 import logo2 from '../assets/logo2.png'
 import logo3 from '../assets/logo3.png'
 
-// รายการเมนูทั้งหมด
+// รายการเมนูทั้งหมด - แต่ละหน้าต้องมี permission เฉพาะ
 const MENU_ITEMS = [
   {
     path: '/dashboard/home',
     label: 'หน้าหลัก',
     icon: '🏠',
-    permission: null, // ทุกคนเข้าถึงได้
+    permission: null, // ทุกคนเข้าได้
   },
   {
     path: '/dashboard/nutrition',
@@ -42,19 +42,19 @@ const MENU_ITEMS = [
     path: '/dashboard/cost',
     label: 'คำนวณต้นทุน',
     icon: '💰',
-    permission: 'nutrition',
+    permission: 'cost',
   },
-  { 
-    path: '/dashboard/statistics', 
-    label: 'วิเคราะห์สถิติ', 
+  {
+    path: '/dashboard/statistics',
+    label: 'วิเคราะห์สถิติ',
     icon: '📈',
-    permission: 'nutrition'
+    permission: 'statistics',
   },
-  { 
-    path: '/dashboard/sensory', 
-    label: 'วิเคราะห์ทางประสาทสัมผัส', 
+  {
+    path: '/dashboard/sensory',
+    label: 'วิเคราะห์ทางประสาทสัมผัส',
     icon: '🧪',
-    permission: 'nutrition'
+    permission: 'sensory',
   },
   {
     path: '/dashboard/manage-items',
@@ -74,9 +74,12 @@ const Sidebar = () => {
   const { hasPermission, roleData } = useAuth()
 
   // กรองเมนูตาม permission
-  const visibleMenus = MENU_ITEMS.filter((item) => 
-    item.permission === null || hasPermission(item.permission)
-  )
+  // ถ้า permission เป็น null = ทุกคนเห็น
+  // ถ้ามี permission = ต้องมีสิทธิ์ถึงจะเห็น
+  const visibleMenus = MENU_ITEMS.filter((item) => {
+    if (item.permission === null) return true
+    return hasPermission(item.permission)
+  })
 
   return (
     <aside className="sidebar">
