@@ -11192,6 +11192,7 @@ body.theme-dark .recipe-badge.private {
   align-items: center;
   padding: 16px 24px;
   background: var(--card-bg);
+  background-color: #ffffff;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -11306,12 +11307,17 @@ body.theme-dark .recipe-badge.private {
   top: calc(100% + 8px);
   right: 0;
   width: 260px;
-  background: var(--card-bg);
+  background-color: #ffffff;
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   animation: dropdownFadeIn 0.2s ease;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .topbar-dropdown-menu {
+  background-color: #1e1e2e;
 }
 
 @keyframes dropdownFadeIn {
@@ -11330,7 +11336,11 @@ body.theme-dark .recipe-badge.private {
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: var(--bg);
+  background-color: #f3f4f6;
+}
+
+[data-theme="dark"] .dropdown-header {
+  background-color: #2a2a3c;
 }
 
 .dropdown-avatar {
@@ -11356,15 +11366,23 @@ body.theme-dark .recipe-badge.private {
 .dropdown-name {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--text);
+  color: #1f2937;
+}
+
+[data-theme="dark"] .dropdown-name {
+  color: #f3f4f6;
 }
 
 .dropdown-email {
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: #6b7280;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+[data-theme="dark"] .dropdown-email {
+  color: #9ca3af;
 }
 
 .dropdown-divider {
@@ -11378,7 +11396,7 @@ body.theme-dark .recipe-badge.private {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  color: var(--text);
+  color: #374151;
   text-decoration: none;
   font-size: 0.9rem;
   transition: background 0.2s;
@@ -11389,8 +11407,16 @@ body.theme-dark .recipe-badge.private {
   text-align: left;
 }
 
+[data-theme="dark"] .dropdown-item {
+  color: #e5e7eb;
+}
+
 .dropdown-item:hover {
-  background: var(--bg);
+  background-color: #f3f4f6;
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+  background-color: #2a2a3c;
 }
 
 .dropdown-icon {
@@ -11432,6 +11458,7 @@ body.theme-dark .recipe-badge.private {
     right: -8px;
   }
 }
+
 
 
 
