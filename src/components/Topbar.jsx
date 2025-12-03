@@ -1,6 +1,8 @@
 // src/components/Topbar.jsx
 import React, { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 
@@ -12,7 +14,16 @@ const Topbar = () => {
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef(null)
 
+  // Announcement State
+  const [announcement, setAnnouncement] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editText, setEditText] = useState('')
+  const [isEnabled, setIsEnabled] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'ผู้ใช้'
+  const canEdit = role === 'owner' || role === 'admin'
 
   // ปิด dropdown เมื่อคลิกข้างนอก
   useEffect(() => {
@@ -21,7 +32,6 @@ const Topbar = () => {
         setShowDropdown(false)
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
@@ -30,6 +40,31 @@ const Topbar = () => {
   useEffect(() => {
     setShowDropdown(false)
   }, [location])
+
+  // ดึงข้อมูลประกาศจาก Firestore
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      doc(db, 'settings', 'announcement'),
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data()
+          setAnnouncement(data)
+          setEditText(data.text || '')
+          setIsEnabled(data.enabled !== false)
+        } else {
+          setAnnouncement({
+            text: 'ยินดีต้อนรับสู่ระบบคำนวณคุณค่าทางโภชนาการ 🎉',
+            enabled: true
+          })
+          setEditText('ยินดีต้อนรับสู่ระบบคำนวณคุณค่าทางโภชนาการ 🎉')
+        }
+      },
+      (error) => {
+        console.error('Error fetching announcement:', error)
+      }
+    )
+    return () => unsubscribe()
+  }, [])
 
   // หา Page Title จาก path
   const getPageTitle = () => {
@@ -41,6 +76,7 @@ const Topbar = () => {
       '/dashboard/thai-rdi': 'ฉลากโภชนาการ',
       '/dashboard/recipes': 'สูตรอาหาร',
       '/dashboard/compare': 'เปรียบเทียบสูตร',
+      '/dashboard/cost': 'คำนวณต้นทุน',
       '/dashboard/manage-items': 'จัดการวัตถุดิบ',
       '/dashboard/admin': 'Admin Console',
       '/dashboard/statistics': 'วิเคราะห์สถิติ',
@@ -50,72 +86,194 @@ const Topbar = () => {
     return titles[path] || 'แดชบอร์ด'
   }
 
-  return (
-    <header className="topbar">
-      <div className="topbar-left">
-        <h1 className="topbar-title">{getPageTitle()}</h1>
-      </div>
-      
-      <div className="topbar-right">
-        {/* Theme Toggle */}
-        <button className="topbar-icon-btn" onClick={toggleTheme} title="เปลี่ยนธีม">
-          {theme === 'light' ? '🌙' : '☀️'}
-        </button>
+  // บันทึกประกาศ
+  const handleSave = async () => {
+    if (!editText.trim()) return
+    setSaving(true)
+    try {
+      await setDoc(doc(db, 'settings', 'announcement'), {
+        text: editText.trim(),
+        enabled: isEnabled,
+        updatedAt: serverTimestamp(),
+        updatedBy: role
+      })
+      setIsEditing(false)
+    } catch (error) {
+      console.error('Error saving announcement:', error)
+      alert('เกิดข้อผิดพลาดในการบันทึก')
+    } finally {
+      setSaving(false)
+    }
+  }
 
-        {/* User Dropdown */}
-        <div className="topbar-user-dropdown" ref={dropdownRef}>
-          <button 
-            className="topbar-user-btn"
-            onClick={() => setShowDropdown(!showDropdown)}
+  // Toggle เปิด/ปิดประกาศ
+  const handleToggle = async () => {
+    setSaving(true)
+    try {
+      await setDoc(doc(db, 'settings', 'announcement'), {
+        ...announcement,
+        enabled: !isEnabled,
+        updatedAt: serverTimestamp()
+      })
+    } catch (error) {
+      console.error('Error toggling announcement:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <>
+      <header className="topbar">
+        <div className="topbar-left">
+          <h1 className="topbar-title">{getPageTitle()}</h1>
+        </div>
+
+        {/* Announcement Marquee - ตรงกลาง */}
+        {announcement && isEnabled && announcement.text && (
+          <div 
+            className={`topbar-announcement ${isPaused ? 'paused' : ''}`}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onClick={() => canEdit && setIsEditing(true)}
+            title={canEdit ? 'คลิกเพื่อแก้ไข' : ''}
           >
-            <div className="topbar-user-avatar">
-              {displayName.charAt(0).toUpperCase()}
+            <div className="announcement-track">
+              <span className="announcement-text">
+                📢 {announcement.text}
+              </span>
+              <span className="announcement-text">
+                📢 {announcement.text}
+              </span>
             </div>
-            <div className="topbar-user-info">
-              <span className="topbar-user-name">{displayName}</span>
-              <span className="topbar-user-role">{roleData?.name || role}</span>
-            </div>
-            <span className={`topbar-dropdown-arrow ${showDropdown ? 'open' : ''}`}>
-              ▼
-            </span>
+            {canEdit && <span className="announcement-edit-hint">✏️</span>}
+          </div>
+        )}
+        
+        <div className="topbar-right">
+          {/* Theme Toggle */}
+          <button className="topbar-icon-btn" onClick={toggleTheme} title="เปลี่ยนธีม">
+            {theme === 'light' ? '🌙' : '☀️'}
           </button>
 
-          {/* Dropdown Menu */}
-          {showDropdown && (
-            <div className="topbar-dropdown-menu">
-              <div className="dropdown-header">
-                <div className="dropdown-avatar">
-                  {displayName.charAt(0).toUpperCase()}
+          {/* User Dropdown */}
+          <div className="topbar-user-dropdown" ref={dropdownRef}>
+            <button 
+              className="topbar-user-btn"
+              onClick={() => setShowDropdown(!showDropdown)}
+            >
+              <div className="topbar-user-avatar">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+              <div className="topbar-user-info">
+                <span className="topbar-user-name">{displayName}</span>
+                <span className="topbar-user-role">{roleData?.name || role}</span>
+              </div>
+              <span className={`topbar-dropdown-arrow ${showDropdown ? 'open' : ''}`}>
+                ▼
+              </span>
+            </button>
+
+            {showDropdown && (
+              <div className="topbar-dropdown-menu">
+                <div className="dropdown-header">
+                  <div className="dropdown-avatar">
+                    {displayName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="dropdown-user-info">
+                    <span className="dropdown-name">{displayName}</span>
+                    <span className="dropdown-email">{user?.email}</span>
+                  </div>
                 </div>
-                <div className="dropdown-user-info">
-                  <span className="dropdown-name">{displayName}</span>
-                  <span className="dropdown-email">{user?.email}</span>
-                </div>
+
+                <div className="dropdown-divider"></div>
+
+                <Link to="/dashboard/home" className="dropdown-item">
+                  <span className="dropdown-icon">🏠</span>
+                  หน้าหลัก
+                </Link>
+
+                <Link to="/dashboard/profile" className="dropdown-item">
+                  <span className="dropdown-icon">👤</span>
+                  ตั้งค่าโปรไฟล์
+                </Link>
+
+                <div className="dropdown-divider"></div>
+
+                <button className="dropdown-item logout" onClick={logout}>
+                  <span className="dropdown-icon">🚪</span>
+                  ออกจากระบบ
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Modal แก้ไขประกาศ */}
+      {isEditing && (
+        <div className="announcement-modal-overlay" onClick={() => setIsEditing(false)}>
+          <div className="announcement-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📢 แก้ไขข้อความประกาศ</h3>
+              <button className="modal-close" onClick={() => setIsEditing(false)}>✕</button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="form-group">
+                <label>ข้อความประกาศ</label>
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  placeholder="พิมพ์ข้อความประกาศที่นี่..."
+                  rows={3}
+                  maxLength={200}
+                />
+                <span className="char-count">{editText.length}/200</span>
               </div>
 
-              <div className="dropdown-divider"></div>
+              <div className="form-group toggle-group">
+                <label>สถานะ</label>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={isEnabled}
+                    onChange={(e) => setIsEnabled(e.target.checked)}
+                  />
+                  <span className="toggle-slider"></span>
+                  <span className="toggle-label">
+                    {isEnabled ? '🟢 เปิดใช้งาน' : '🔴 ปิดใช้งาน'}
+                  </span>
+                </label>
+              </div>
 
-              <Link to="/dashboard/home" className="dropdown-item">
-                <span className="dropdown-icon">🏠</span>
-                หน้าหลัก
-              </Link>
+              <div className="form-group">
+                <label>ตัวอย่าง</label>
+                <div className="preview-marquee">
+                  <span>📢 {editText || 'ข้อความประกาศ...'}</span>
+                </div>
+              </div>
+            </div>
 
-              <Link to="/dashboard/profile" className="dropdown-item">
-                <span className="dropdown-icon">👤</span>
-                ตั้งค่าโปรไฟล์
-              </Link>
-
-              <div className="dropdown-divider"></div>
-
-              <button className="dropdown-item logout" onClick={logout}>
-                <span className="dropdown-icon">🚪</span>
-                ออกจากระบบ
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => setIsEditing(false)}>
+                ยกเลิก
+              </button>
+              <button className="btn-toggle" onClick={handleToggle} disabled={saving}>
+                {isEnabled ? '🔴 ปิดประกาศ' : '🟢 เปิดประกาศ'}
+              </button>
+              <button 
+                className="btn-save" 
+                onClick={handleSave}
+                disabled={saving || !editText.trim()}
+              >
+                {saving ? '⏳ กำลังบันทึก...' : '💾 บันทึก'}
               </button>
             </div>
-          )}
+          </div>
         </div>
-      </div>
-    </header>
+      )}
+    </>
   )
 }
 
