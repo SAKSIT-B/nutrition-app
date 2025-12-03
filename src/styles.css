@@ -51,48 +51,208 @@ body {
   padding: 16px;
 }
 
-/* Sidebar */
+/* ===================================
+   Sidebar Styles - Menu อยู่กึ่งกลางแนวตั้ง
+   =================================== */
 
 .sidebar {
-  width: 260px;
-  background: #020617;
-  color: #e5e7eb;
-  padding: 16px;
+  width: 220px;
+  min-height: 100vh;
+  height: 100%;
+  background: linear-gradient(180deg, #1e1e2e 0%, #2a2a3c 100%);
   display: flex;
   flex-direction: column;
+  position: sticky;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 50;
+}
+
+/* Brand/Logo Section - อยู่ด้านบน */
+.sidebar-brand {
+  padding: 20px 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-logos {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sidebar-logos img {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: white;
+  padding: 2px;
 }
 
 .sidebar-header h2 {
-  margin: 0;
-  font-size: 1.4rem;
+  color: #f3f4f6;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
 }
 
 .sidebar-subtitle {
-  margin: 4px 0 12px;
-  font-size: 0.8rem;
   color: #9ca3af;
+  font-size: 0.75rem;
+  margin: 0;
 }
 
+/* Role Badge */
+.sidebar-role {
+  padding: 0 16px 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+}
+
+/* ===== Navigation - อยู่กึ่งกลาง ===== */
 .sidebar-nav {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+  padding: 20px 12px;
+  gap: 6px;
 }
 
+/* Menu Links */
 .sidebar-link {
-  padding: 8px 10px;
-  border-radius: 8px;
-  color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: #9ca3af;
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .sidebar-link:hover {
-  background: #111827;
+  background: rgba(99, 102, 241, 0.15);
+  color: #e5e7eb;
+  transform: translateX(4px);
 }
 
 .sidebar-link-active {
-  background: #1d4ed8;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.sidebar-link-active:hover {
+  transform: translateX(0);
+}
+
+.sidebar-link-icon {
+  font-size: 1.15rem;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-link-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Empty State */
+.sidebar-empty {
+  text-align: center;
+  padding: 20px;
+  color: #6b7280;
+}
+
+.sidebar-empty p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* ===== Footer (ถ้ามี) ===== */
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* ===== Scrollbar ===== */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 70px;
+    padding: 10px 0;
+  }
+  
+  .sidebar-header h2,
+  .sidebar-subtitle,
+  .sidebar-link-label {
+    display: none;
+  }
+  
+  .sidebar-logos img {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .sidebar-role-badge {
+    padding: 6px;
+    font-size: 0.9rem;
+  }
+  
+  .sidebar-role-badge span:last-child {
+    display: none;
+  }
+  
+  .sidebar-link {
+    justify-content: center;
+    padding: 12px;
+  }
+  
+  .sidebar-link-icon {
+    font-size: 1.3rem;
+  }
+  
+  .sidebar-nav {
+    padding: 10px 8px;
+  }
 }
 
 /* Topbar */
@@ -788,32 +948,6 @@ body.theme-dark .item-nameeng {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 10px;
 }
-
-/* Brand + Logos ด้านบน Sidebar */
-.sidebar-brand {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-/* แถวโลโก้ 3 อัน */
-.sidebar-logos {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* รูปโลโก้แต่ละอัน */
-.sidebar-logos img {
-  height: 32px;          /* ปรับขนาดโลโก้หลัก ๆ ตรงนี้ */
-  width: auto;
-  border-radius: 999px;  /* ให้ดูเป็นเม็ดยา/วงกลม */
-  background: #ffffff;   /* ให้มีพื้นสีขาวตัดกับพื้น sidebar มืด ๆ */
-  padding: 4px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
-}
-
 
 
 /* ปุ่ม Pagination */
@@ -2514,43 +2648,6 @@ body.theme-dark .recipe-badge.private {
   font-weight: 500;
 }
 
-/* Sidebar Role Badge */
-.sidebar-role {
-  padding: 8px 16px;
-  margin: 0 12px 12px;
-}
-
-.sidebar-role-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  color: white;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-/* Sidebar Link with Icon */
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sidebar-link-icon {
-  font-size: 1.1rem;
-}
-
-.sidebar-link-label {
-  flex: 1;
-}
-
-.sidebar-empty {
-  padding: 20px;
-  text-align: center;
-  color: var(--text-muted);
-}
 
 /* Access Denied & Not Found */
 .access-denied,
@@ -13436,4 +13533,5 @@ body.theme-dark .recipe-badge.private {
     justify-content: center;
   }
 }
+
 
