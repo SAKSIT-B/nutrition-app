@@ -128,11 +128,12 @@ const Topbar = () => {
   }
 
   // คำนวณความเร็ว animation ตามความยาวข้อความ
+  // ข้อความยาว = ช้าลง เพื่อให้อ่านทันและวิ่งครบ
   const getAnimationDuration = () => {
     const textLength = announcement?.text?.length || 50
-    // ข้อความยาว = ช้าลง เพื่อให้อ่านทัน
-    const baseDuration = Math.max(15, textLength * 0.15)
-    return `${baseDuration}s`
+    // สูตร: ความยาว x 0.25 วินาที (ขั้นต่ำ 15 วินาที)
+    const duration = Math.max(15, textLength * 0.25)
+    return `${duration}s`
   }
 
   const showAnnouncement = announcement && isEnabled && announcement.text && !isHiddenByUser
@@ -169,17 +170,16 @@ const Topbar = () => {
               <div className="announcement-track-wrapper">
                 <div 
                   className="announcement-track"
-                  style={{ animationDuration: getAnimationDuration() }}
+                  style={{ '--marquee-duration': getAnimationDuration() }}
                   onClick={() => canEdit && setIsEditing(true)}
                 >
+                  {/* ข้อความซ้ำ 2 ชุด เพื่อให้วิ่งต่อเนื่อง */}
                   <span className="announcement-text">
                     📢 {announcement.text}
                   </span>
-                  <span className="announcement-spacer"></span>
                   <span className="announcement-text">
                     📢 {announcement.text}
                   </span>
-                  <span className="announcement-spacer"></span>
                 </div>
               </div>
 
@@ -293,9 +293,9 @@ const Topbar = () => {
                   onChange={(e) => setEditText(e.target.value)}
                   placeholder="พิมพ์ข้อความประกาศที่นี่..."
                   rows={4}
-                  maxLength={300}
+                  maxLength={500}
                 />
-                <span className="char-count">{editText.length}/300</span>
+                <span className="char-count">{editText.length}/500</span>
               </div>
 
               <div className="form-group toggle-group">
