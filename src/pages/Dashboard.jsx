@@ -13,7 +13,9 @@ import CompareRecipes from './CompareRecipes'
 import StatisticsAnalysis from './StatisticsAnalysis'
 import SensoryEvaluation from './SensoryEvaluation'
 import ProfileSettings from './ProfileSettings'
+import CostCalculator from './CostCalculator'
 import VersionChecker from '../components/VersionChecker'
+import AnnouncementBanner from '../components/AnnouncementBanner'
 import { useAuth } from '../contexts/AuthContext'
 
 // หน้า Access Denied
@@ -47,6 +49,9 @@ const Dashboard = () => {
 
   return (
     <div className="layout">
+      {/* แถบประกาศข้อความวิ่ง */}
+      <AnnouncementBanner />
+      
       {/* ตรวจสอบเวอร์ชันใหม่ */}
       <VersionChecker />
       
@@ -108,6 +113,18 @@ const Dashboard = () => {
               element={
                 hasPermission('compare') ? (
                   <CompareRecipes />
+                ) : (
+                  <AccessDenied />
+                )
+              }
+            />
+
+            {/* หน้าคำนวณต้นทุน */}
+            <Route
+              path="cost"
+              element={
+                hasPermission('nutrition') ? (
+                  <CostCalculator />
                 ) : (
                   <AccessDenied />
                 )
