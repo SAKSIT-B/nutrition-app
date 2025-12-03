@@ -3,19 +3,44 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Topbar from '../components/Topbar'
-import HomeOverview from './HomeOverview'
 import NutritionCalculator from './NutritionCalculator'
 import ManageItems from './ManageItems'
 import AdminConsole from './AdminConsole'
 import ThaiRDICalculator from './ThaiRDICalculator'
 import SavedRecipes from './SavedRecipes'
 import CompareRecipes from './CompareRecipes'
+import CostCalculator from './CostCalculator'
 import StatisticsAnalysis from './StatisticsAnalysis'
 import SensoryEvaluation from './SensoryEvaluation'
-import ProfileSettings from './ProfileSettings'
-import CostCalculator from './CostCalculator'
 import VersionChecker from '../components/VersionChecker'
 import { useAuth } from '../contexts/AuthContext'
+
+// หน้า Home/Welcome
+const HomePage = () => {
+  const { user, roleData } = useAuth()
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'ผู้ใช้'
+
+  return (
+    <div className="home-page">
+      <div className="home-welcome">
+        <h1>👋 สวัสดี, {displayName}!</h1>
+        <p>ยินดีต้อนรับสู่ระบบคำนวณคุณค่าทางโภชนาการ</p>
+        {roleData && (
+          <span 
+            className="home-role-badge"
+            style={{ backgroundColor: roleData.color }}
+          >
+            {roleData.icon} {roleData.name}
+          </span>
+        )}
+      </div>
+      <div className="home-quick-links">
+        <h3>🚀 เริ่มต้นใช้งาน</h3>
+        <p>เลือกเมนูจากแถบด้านซ้ายเพื่อเริ่มใช้งาน</p>
+      </div>
+    </div>
+  )
+}
 
 // หน้า Access Denied
 const AccessDenied = () => (
@@ -24,6 +49,7 @@ const AccessDenied = () => (
       <div className="access-denied-icon">🚫</div>
       <h2>ไม่มีสิทธิ์เข้าถึง</h2>
       <p>คุณไม่มีสิทธิ์เข้าหน้านี้</p>
+      <p className="access-denied-hint">กรุณาติดต่อผู้ดูแลระบบเพื่อขอสิทธิ์เข้าถึง</p>
     </div>
   </div>
 )
@@ -43,9 +69,18 @@ const NotFound = () => {
   )
 }
 
-const Dashboard = () => {
+// Component สำหรับ Protected Route
+const ProtectedPage = ({ permission, children }) => {
   const { hasPermission } = useAuth()
+  
+  if (!hasPermission(permission)) {
+    return <AccessDenied />
+  }
+  
+  return children
+}
 
+const Dashboard = () => {
   return (
     <div className="layout">
       {/* ตรวจสอบเวอร์ชันใหม่ */}
@@ -58,24 +93,19 @@ const Dashboard = () => {
 
         <div className="layout-content">
           <Routes>
-            {/* Default redirect ไปหน้า Home */}
-            <Route path="/" element={<Navigate to="home" />} />
-
-            {/* หน้าหลัก (Home Overview) */}
-            <Route path="home" element={<HomeOverview />} />
-
-            {/* หน้าตั้งค่าโปรไฟล์ */}
-            <Route path="profile" element={<ProfileSettings />} />
+            {/* Default redirect */}
+            <Route path="/" element={<Navigate to="home" replace />} />
+            
+            {/* หน้าหลัก - ทุกคนเข้าได้ */}
+            <Route path="home" element={<HomePage />} />
 
             {/* หน้าคำนวณโภชนาการ */}
             <Route
               path="nutrition"
               element={
-                hasPermission('nutrition') ? (
+                <ProtectedPage permission="nutrition">
                   <NutritionCalculator />
-                ) : (
-                  <AccessDenied />
-                )
+                </ProtectedPage>
               }
             />
 
@@ -83,11 +113,9 @@ const Dashboard = () => {
             <Route
               path="thai-rdi"
               element={
-                hasPermission('thai-rdi') ? (
+                <ProtectedPage permission="thai-rdi">
                   <ThaiRDICalculator />
-                ) : (
-                  <AccessDenied />
-                )
+                </ProtectedPage>
               }
             />
 
@@ -95,11 +123,9 @@ const Dashboard = () => {
             <Route
               path="recipes"
               element={
-                hasPermission('recipes') ? (
+                <ProtectedPage permission="recipes">
                   <SavedRecipes />
-                ) : (
-                  <AccessDenied />
-                )
+                </ProtectedPage>
               }
             />
 
@@ -107,23 +133,39 @@ const Dashboard = () => {
             <Route
               path="compare"
               element={
-                hasPermission('compare') ? (
+                <ProtectedPage permission="compare">
                   <CompareRecipes />
-                ) : (
-                  <AccessDenied />
-                )
+                </ProtectedPage>
               }
             />
 
-            {/* หน้าคำนวณต้นทุน */}
+            {/* หน้าคำนวณต้นทุน - ใช้ permission 'cost' */}
             <Route
               path="cost"
               element={
-                hasPermission('nutrition') ? (
+                <ProtectedPage permission="cost">
                   <CostCalculator />
-                ) : (
-                  <AccessDenied />
-                )
+                </ProtectedPage>
+              }
+            />
+
+            {/* หน้าวิเคราะห์สถิติ - ใช้ permission 'statistics' */}
+            <Route
+              path="statistics"
+              element={
+                <ProtectedPage permission="statistics">
+                  <StatisticsAnalysis />
+                </ProtectedPage>
+              }
+            />
+
+            {/* หน้าวิเคราะห์ทางประสาทสัมผัส - ใช้ permission 'sensory' */}
+            <Route
+              path="sensory"
+              element={
+                <ProtectedPage permission="sensory">
+                  <SensoryEvaluation />
+                </ProtectedPage>
               }
             />
 
@@ -131,11 +173,9 @@ const Dashboard = () => {
             <Route
               path="manage-items"
               element={
-                hasPermission('manage-items') ? (
+                <ProtectedPage permission="manage-items">
                   <ManageItems />
-                ) : (
-                  <AccessDenied />
-                )
+                </ProtectedPage>
               }
             />
 
@@ -143,38 +183,12 @@ const Dashboard = () => {
             <Route
               path="admin"
               element={
-                hasPermission('admin') ? (
+                <ProtectedPage permission="admin">
                   <AdminConsole />
-                ) : (
-                  <AccessDenied />
-                )
+                </ProtectedPage>
               }
             />
-
-            {/* วิเคราะห์สถิติ */}
-            <Route
-              path="statistics"
-              element={
-                hasPermission('nutrition') ? (
-                  <StatisticsAnalysis />
-                ) : (
-                  <AccessDenied />
-                )
-              }
-            />
-
-            {/* วิเคราะห์ทางประสาทสัมผัส */}
-            <Route
-              path="sensory"
-              element={
-                hasPermission('nutrition') ? (
-                  <SensoryEvaluation />
-                ) : (
-                  <AccessDenied />
-                )
-              }
-            />
-
+            
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
