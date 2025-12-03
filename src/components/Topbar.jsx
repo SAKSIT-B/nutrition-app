@@ -21,7 +21,7 @@ const Topbar = () => {
   const [isEnabled, setIsEnabled] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
-  const [isHiddenByUser, setIsHiddenByUser] = useState(false) // User ซ่อนเอง
+  const [isHiddenByUser, setIsHiddenByUser] = useState(false)
 
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'ผู้ใช้'
   const canEdit = role === 'owner' || role === 'admin'
@@ -53,7 +53,6 @@ const Topbar = () => {
           setEditText(data.text || '')
           setIsEnabled(data.enabled !== false)
         } else {
-          // สร้างค่าเริ่มต้น
           const defaultAnnouncement = {
             text: 'ยินดีต้อนรับสู่ระบบคำนวณคุณค่าทางโภชนาการ 🎉',
             enabled: true
@@ -102,7 +101,7 @@ const Topbar = () => {
         updatedBy: role
       })
       setIsEditing(false)
-      setIsHiddenByUser(false) // เปิดแสดงหลังบันทึก
+      setIsHiddenByUser(false)
     } catch (error) {
       console.error('Error saving announcement:', error)
       alert('เกิดข้อผิดพลาดในการบันทึก')
@@ -128,18 +127,25 @@ const Topbar = () => {
     }
   }
 
-  // ตรวจสอบว่าควรแสดง Announcement หรือไม่
+  // คำนวณความเร็ว animation ตามความยาวข้อความ
+  const getAnimationDuration = () => {
+    const textLength = announcement?.text?.length || 50
+    // ข้อความยาว = ช้าลง เพื่อให้อ่านทัน
+    const baseDuration = Math.max(15, textLength * 0.15)
+    return `${baseDuration}s`
+  }
+
   const showAnnouncement = announcement && isEnabled && announcement.text && !isHiddenByUser
 
   return (
     <>
       <header className="topbar">
-        {/* ซ้าย - ชื่อหน้า (ความกว้างคงที่) */}
+        {/* ซ้าย - ชื่อหน้า */}
         <div className="topbar-left">
           <h1 className="topbar-title">{getPageTitle()}</h1>
         </div>
 
-        {/* กลาง - Announcement (ความกว้างคงที่) */}
+        {/* กลาง - Announcement */}
         <div className="topbar-center">
           {showAnnouncement ? (
             <div 
@@ -147,7 +153,7 @@ const Topbar = () => {
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
             >
-              {/* ปุ่มปิด (User) */}
+              {/* ปุ่มปิด */}
               <button 
                 className="announcement-close-btn"
                 onClick={(e) => {
@@ -160,20 +166,24 @@ const Topbar = () => {
               </button>
 
               {/* ข้อความวิ่ง */}
-              <div 
-                className="announcement-track"
-                onClick={() => canEdit && setIsEditing(true)}
-                style={{ cursor: canEdit ? 'pointer' : 'default' }}
-              >
-                <span className="announcement-text">
-                  📢 {announcement.text}
-                </span>
-                <span className="announcement-text">
-                  📢 {announcement.text}
-                </span>
+              <div className="announcement-track-wrapper">
+                <div 
+                  className="announcement-track"
+                  style={{ animationDuration: getAnimationDuration() }}
+                  onClick={() => canEdit && setIsEditing(true)}
+                >
+                  <span className="announcement-text">
+                    📢 {announcement.text}
+                  </span>
+                  <span className="announcement-spacer"></span>
+                  <span className="announcement-text">
+                    📢 {announcement.text}
+                  </span>
+                  <span className="announcement-spacer"></span>
+                </div>
               </div>
 
-              {/* ปุ่มแก้ไข (Admin) */}
+              {/* ปุ่มแก้ไข */}
               {canEdit && (
                 <button 
                   className="announcement-edit-btn"
@@ -185,7 +195,6 @@ const Topbar = () => {
               )}
             </div>
           ) : (
-            /* Placeholder หรือปุ่มเปิด */
             <div className="topbar-announcement-placeholder">
               {canEdit && !isEnabled && (
                 <button 
@@ -208,14 +217,12 @@ const Topbar = () => {
           )}
         </div>
         
-        {/* ขวา - User controls (ความกว้างคงที่) */}
+        {/* ขวา - User controls */}
         <div className="topbar-right">
-          {/* Theme Toggle */}
           <button className="topbar-icon-btn" onClick={toggleTheme} title="เปลี่ยนธีม">
             {theme === 'light' ? '🌙' : '☀️'}
           </button>
 
-          {/* User Dropdown */}
           <div className="topbar-user-dropdown" ref={dropdownRef}>
             <button 
               className="topbar-user-btn"
@@ -285,10 +292,10 @@ const Topbar = () => {
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
                   placeholder="พิมพ์ข้อความประกาศที่นี่..."
-                  rows={3}
-                  maxLength={200}
+                  rows={4}
+                  maxLength={300}
                 />
-                <span className="char-count">{editText.length}/200</span>
+                <span className="char-count">{editText.length}/300</span>
               </div>
 
               <div className="form-group toggle-group">
@@ -309,7 +316,7 @@ const Topbar = () => {
               <div className="form-group">
                 <label>ตัวอย่าง</label>
                 <div className="preview-marquee">
-                  <span>📢 {editText || 'ข้อความประกาศ...'}</span>
+                  <div className="preview-text">📢 {editText || 'ข้อความประกาศ...'}</div>
                 </div>
               </div>
             </div>
