@@ -21,6 +21,7 @@ const Topbar = () => {
   const [isEnabled, setIsEnabled] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
+  const [isHiddenByUser, setIsHiddenByUser] = useState(false) // User ซ่อนเอง
 
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'ผู้ใช้'
   const canEdit = role === 'owner' || role === 'admin'
@@ -52,11 +53,14 @@ const Topbar = () => {
           setEditText(data.text || '')
           setIsEnabled(data.enabled !== false)
         } else {
-          setAnnouncement({
+          // สร้างค่าเริ่มต้น
+          const defaultAnnouncement = {
             text: 'ยินดีต้อนรับสู่ระบบคำนวณคุณค่าทางโภชนาการ 🎉',
             enabled: true
-          })
-          setEditText('ยินดีต้อนรับสู่ระบบคำนวณคุณค่าทางโภชนาการ 🎉')
+          }
+          setAnnouncement(defaultAnnouncement)
+          setEditText(defaultAnnouncement.text)
+          setIsEnabled(true)
         }
       },
       (error) => {
@@ -98,6 +102,7 @@ const Topbar = () => {
         updatedBy: role
       })
       setIsEditing(false)
+      setIsHiddenByUser(false) // เปิดแสดงหลังบันทึก
     } catch (error) {
       console.error('Error saving announcement:', error)
       alert('เกิดข้อผิดพลาดในการบันทึก')
@@ -115,6 +120,7 @@ const Topbar = () => {
         enabled: !isEnabled,
         updatedAt: serverTimestamp()
       })
+      setIsHiddenByUser(false)
     } catch (error) {
       console.error('Error toggling announcement:', error)
     } finally {
@@ -122,34 +128,87 @@ const Topbar = () => {
     }
   }
 
+  // ตรวจสอบว่าควรแสดง Announcement หรือไม่
+  const showAnnouncement = announcement && isEnabled && announcement.text && !isHiddenByUser
+
   return (
     <>
       <header className="topbar">
+        {/* ซ้าย - ชื่อหน้า (ความกว้างคงที่) */}
         <div className="topbar-left">
           <h1 className="topbar-title">{getPageTitle()}</h1>
         </div>
 
-        {/* Announcement Marquee - ตรงกลาง */}
-        {announcement && isEnabled && announcement.text && (
-          <div 
-            className={`topbar-announcement ${isPaused ? 'paused' : ''}`}
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-            onClick={() => canEdit && setIsEditing(true)}
-            title={canEdit ? 'คลิกเพื่อแก้ไข' : ''}
-          >
-            <div className="announcement-track">
-              <span className="announcement-text">
-                📢 {announcement.text}
-              </span>
-              <span className="announcement-text">
-                📢 {announcement.text}
-              </span>
+        {/* กลาง - Announcement (ความกว้างคงที่) */}
+        <div className="topbar-center">
+          {showAnnouncement ? (
+            <div 
+              className={`topbar-announcement ${isPaused ? 'paused' : ''}`}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+            >
+              {/* ปุ่มปิด (User) */}
+              <button 
+                className="announcement-close-btn"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsHiddenByUser(true)
+                }}
+                title="ซ่อนประกาศ"
+              >
+                ✕
+              </button>
+
+              {/* ข้อความวิ่ง */}
+              <div 
+                className="announcement-track"
+                onClick={() => canEdit && setIsEditing(true)}
+                style={{ cursor: canEdit ? 'pointer' : 'default' }}
+              >
+                <span className="announcement-text">
+                  📢 {announcement.text}
+                </span>
+                <span className="announcement-text">
+                  📢 {announcement.text}
+                </span>
+              </div>
+
+              {/* ปุ่มแก้ไข (Admin) */}
+              {canEdit && (
+                <button 
+                  className="announcement-edit-btn"
+                  onClick={() => setIsEditing(true)}
+                  title="แก้ไขประกาศ"
+                >
+                  ✏️
+                </button>
+              )}
             </div>
-            {canEdit && <span className="announcement-edit-hint">✏️</span>}
-          </div>
-        )}
+          ) : (
+            /* Placeholder หรือปุ่มเปิด */
+            <div className="topbar-announcement-placeholder">
+              {canEdit && !isEnabled && (
+                <button 
+                  className="announcement-enable-btn"
+                  onClick={handleToggle}
+                  disabled={saving}
+                >
+                  📢 เปิดประกาศ
+                </button>
+              )}
+              {canEdit && isEnabled && isHiddenByUser && (
+                <button 
+                  className="announcement-show-btn"
+                  onClick={() => setIsHiddenByUser(false)}
+                >
+                  📢 แสดงประกาศ
+                </button>
+              )}
+            </div>
+          )}
+        </div>
         
+        {/* ขวา - User controls (ความกว้างคงที่) */}
         <div className="topbar-right">
           {/* Theme Toggle */}
           <button className="topbar-icon-btn" onClick={toggleTheme} title="เปลี่ยนธีม">
