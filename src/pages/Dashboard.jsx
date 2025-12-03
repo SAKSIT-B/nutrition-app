@@ -14,10 +14,11 @@ import CompareRecipes from './CompareRecipes'
 import CostCalculator from './CostCalculator'
 import StatisticsAnalysis from './StatisticsAnalysis'
 import SensoryEvaluation from './SensoryEvaluation'
+import ProfileSettings from './ProfileSettings'  // เพิ่ม import
 import VersionChecker from '../components/VersionChecker'
 import { useAuth } from '../contexts/AuthContext'
 
-// ===== HomeOverview Component (รวมไว้ในไฟล์เดียวกัน) =====
+// ===== HomeOverview Component =====
 const HomeOverview = () => {
   const { user, role, roleData, hasPermission } = useAuth()
   const [stats, setStats] = useState({
@@ -302,8 +303,12 @@ const Dashboard = () => {
             {/* Default redirect */}
             <Route path="/" element={<Navigate to="home" replace />} />
             
-            {/* หน้าหลัก */}
+            {/* หน้าหลัก - ทุกคนเข้าได้ */}
             <Route path="home" element={<HomeOverview />} />
+
+            {/* ✅ หน้าตั้งค่าโปรไฟล์ - ทุกคนเข้าได้ */}
+            <Route path="profile" element={<ProfileSettings />} />
+            <Route path="settings" element={<ProfileSettings />} />
 
             {/* หน้าคำนวณโภชนาการ */}
             <Route
