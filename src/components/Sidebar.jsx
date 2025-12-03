@@ -9,6 +9,12 @@ import logo3 from '../assets/logo3.png'
 // รายการเมนูทั้งหมด
 const MENU_ITEMS = [
   {
+    path: '/dashboard/home',
+    label: 'หน้าหลัก',
+    icon: '🏠',
+    permission: null, // ทุกคนเข้าถึงได้
+  },
+  {
     path: '/dashboard/nutrition',
     label: 'การคำนวณโภชนาการ',
     icon: '🧮',
@@ -32,21 +38,18 @@ const MENU_ITEMS = [
     icon: '📊',
     permission: 'compare',
   },
-
-{ 
-  path: '/dashboard/statistics', 
-  label: 'วิเคราะห์สถิติ', 
-  icon: '📊',
-  permission: 'nutrition'
-},
-
-{ 
-  path: '/dashboard/sensory', 
-  label: 'วิเคราะห์ทางประสาทสัมผัส', 
-  icon: '🧪',
-  permission: 'nutrition'
-},
-  
+  { 
+    path: '/dashboard/statistics', 
+    label: 'วิเคราะห์สถิติ', 
+    icon: '📈',
+    permission: 'nutrition'
+  },
+  { 
+    path: '/dashboard/sensory', 
+    label: 'วิเคราะห์ทางประสาทสัมผัส', 
+    icon: '🧪',
+    permission: 'nutrition'
+  },
   {
     path: '/dashboard/manage-items',
     label: 'เพิ่ม/แก้ไขวัตถุดิบ & เมนู',
@@ -65,7 +68,9 @@ const Sidebar = () => {
   const { hasPermission, roleData } = useAuth()
 
   // กรองเมนูตาม permission
-  const visibleMenus = MENU_ITEMS.filter((item) => hasPermission(item.permission))
+  const visibleMenus = MENU_ITEMS.filter((item) => 
+    item.permission === null || hasPermission(item.permission)
+  )
 
   return (
     <aside className="sidebar">
@@ -120,5 +125,3 @@ const Sidebar = () => {
 }
 
 export default Sidebar
-
-
