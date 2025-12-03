@@ -3,6 +3,7 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Topbar from '../components/Topbar'
+import HomeOverview from './HomeOverview'  // ใช้ HomeOverview ที่มีอยู่แล้ว
 import NutritionCalculator from './NutritionCalculator'
 import ManageItems from './ManageItems'
 import AdminConsole from './AdminConsole'
@@ -14,33 +15,6 @@ import StatisticsAnalysis from './StatisticsAnalysis'
 import SensoryEvaluation from './SensoryEvaluation'
 import VersionChecker from '../components/VersionChecker'
 import { useAuth } from '../contexts/AuthContext'
-
-// หน้า Home/Welcome
-const HomePage = () => {
-  const { user, roleData } = useAuth()
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'ผู้ใช้'
-
-  return (
-    <div className="home-page">
-      <div className="home-welcome">
-        <h1>👋 สวัสดี, {displayName}!</h1>
-        <p>ยินดีต้อนรับสู่ระบบคำนวณคุณค่าทางโภชนาการ</p>
-        {roleData && (
-          <span 
-            className="home-role-badge"
-            style={{ backgroundColor: roleData.color }}
-          >
-            {roleData.icon} {roleData.name}
-          </span>
-        )}
-      </div>
-      <div className="home-quick-links">
-        <h3>🚀 เริ่มต้นใช้งาน</h3>
-        <p>เลือกเมนูจากแถบด้านซ้ายเพื่อเริ่มใช้งาน</p>
-      </div>
-    </div>
-  )
-}
 
 // หน้า Access Denied
 const AccessDenied = () => (
@@ -96,8 +70,8 @@ const Dashboard = () => {
             {/* Default redirect */}
             <Route path="/" element={<Navigate to="home" replace />} />
             
-            {/* หน้าหลัก - ทุกคนเข้าได้ */}
-            <Route path="home" element={<HomePage />} />
+            {/* หน้าหลัก - ทุกคนเข้าได้ - ใช้ HomeOverview */}
+            <Route path="home" element={<HomeOverview />} />
 
             {/* หน้าคำนวณโภชนาการ */}
             <Route
@@ -139,7 +113,7 @@ const Dashboard = () => {
               }
             />
 
-            {/* หน้าคำนวณต้นทุน - ใช้ permission 'cost' */}
+            {/* หน้าคำนวณต้นทุน */}
             <Route
               path="cost"
               element={
@@ -149,7 +123,7 @@ const Dashboard = () => {
               }
             />
 
-            {/* หน้าวิเคราะห์สถิติ - ใช้ permission 'statistics' */}
+            {/* หน้าวิเคราะห์สถิติ */}
             <Route
               path="statistics"
               element={
@@ -159,7 +133,7 @@ const Dashboard = () => {
               }
             />
 
-            {/* หน้าวิเคราะห์ทางประสาทสัมผัส - ใช้ permission 'sensory' */}
+            {/* หน้าวิเคราะห์ทางประสาทสัมผัส */}
             <Route
               path="sensory"
               element={
