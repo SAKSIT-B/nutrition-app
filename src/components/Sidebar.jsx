@@ -38,6 +38,12 @@ const MENU_ITEMS = [
     icon: '📊',
     permission: 'compare',
   },
+  {
+    path: '/dashboard/cost',
+    label: 'คำนวณต้นทุน',
+    icon: '💰',
+    permission: 'nutrition',
+  },
   { 
     path: '/dashboard/statistics', 
     label: 'วิเคราะห์สถิติ', 
