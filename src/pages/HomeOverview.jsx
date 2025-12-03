@@ -22,8 +22,8 @@ const HomeOverview = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // นับจำนวนวัตถุดิบ
-        const ingredientsSnap = await getDocs(collection(db, 'ingredients'));
+        // นับจำนวนวัตถุดิบ (collection ชื่อ 'items')
+        const itemsSnap = await getDocs(collection(db, 'items'));
         
         // นับจำนวนสูตรอาหาร
         const recipesSnap = await getDocs(collection(db, 'recipes'));
@@ -36,7 +36,7 @@ const HomeOverview = () => {
         }
 
         setStats({
-          ingredients: ingredientsSnap.size,
+          ingredients: itemsSnap.size,
           recipes: recipesSnap.size,
           users: usersCount,
           experiments: 0 // สำหรับอนาคต
