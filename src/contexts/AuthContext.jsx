@@ -14,7 +14,11 @@ const DEFAULT_ROLES = {
     color: '#f59e0b',
     icon: '👑',
     priority: 100,
-    permissions: ['nutrition', 'thai-rdi', 'recipes', 'compare', 'manage-items', 'admin', 'manage-roles'],
+    permissions: [
+      'nutrition', 'thai-rdi', 'recipes', 'compare', 
+      'cost', 'statistics', 'sensory',  // หน้าใหม่
+      'manage-items', 'admin', 'manage-roles'
+    ],
     isSystem: true,
   },
   admin: {
@@ -23,7 +27,11 @@ const DEFAULT_ROLES = {
     color: '#3b82f6',
     icon: '🛡️',
     priority: 80,
-    permissions: ['nutrition', 'thai-rdi', 'recipes', 'compare', 'manage-items', 'admin'],
+    permissions: [
+      'nutrition', 'thai-rdi', 'recipes', 'compare', 
+      'cost', 'statistics', 'sensory',  // หน้าใหม่
+      'manage-items', 'admin', 'manage-roles'
+    ],
     isSystem: true,
   },
   mod: {
@@ -32,7 +40,11 @@ const DEFAULT_ROLES = {
     color: '#8b5cf6',
     icon: '⭐',
     priority: 50,
-    permissions: ['nutrition', 'thai-rdi', 'recipes', 'compare', 'manage-items'],
+    permissions: [
+      'nutrition', 'thai-rdi', 'recipes', 'compare', 
+      'cost', 'statistics', 'sensory',  // หน้าใหม่
+      'manage-items'
+    ],
     isSystem: true,
   },
   user: {
@@ -46,21 +58,99 @@ const DEFAULT_ROLES = {
   },
 }
 
-// รายการ permissions ทั้งหมดในระบบ
+// ============================================
+// 📋 รายการ permissions ทั้งหมดในระบบ
+// ============================================
+// 👉 เมื่อต้องการเพิ่มหน้าใหม่ ให้เพิ่มที่นี่!
+// 👉 แล้วมันจะแสดงใน checkbox "จัดการบทบาท" อัตโนมัติ
+// ============================================
 export const ALL_PERMISSIONS = [
-  { id: 'nutrition', name: 'คำนวณโภชนาการ', icon: '🧮', description: 'เข้าถึงหน้าคำนวณคุณค่าทางโภชนาการ' },
-  { id: 'thai-rdi', name: 'ฉลากโภชนาการ', icon: '🏷️', description: 'สร้างฉลากโภชนาการ Thai RDI' },
-  { id: 'recipes', name: 'สูตรอาหาร', icon: '📖', description: 'ดูและจัดการสูตรอาหาร' },
-  { id: 'compare', name: 'เปรียบเทียบสูตร', icon: '📊', description: 'เปรียบเทียบสูตรอาหาร' },
-  { id: 'manage-items', name: 'จัดการวัตถุดิบ', icon: '🥗', description: 'เพิ่ม/แก้ไข/ลบวัตถุดิบและเมนู' },
-  { id: 'admin', name: 'Admin Console', icon: '⚙️', description: 'จัดการผู้ใช้และระบบ' },
-  { id: 'manage-roles', name: 'จัดการบทบาท', icon: '🎭', description: 'สร้าง/แก้ไข/ลบบทบาท' },
+  // ===== หน้าคำนวณ =====
+  { 
+    id: 'nutrition', 
+    name: 'คำนวณโภชนาการ', 
+    icon: '🧮', 
+    description: 'เข้าถึงหน้าคำนวณคุณค่าทางโภชนาการ' 
+  },
+  { 
+    id: 'thai-rdi', 
+    name: 'ฉลากโภชนาการ', 
+    icon: '🏷️', 
+    description: 'สร้างฉลากโภชนาการ Thai RDI' 
+  },
+  { 
+    id: 'cost', 
+    name: 'คำนวณต้นทุน', 
+    icon: '💰', 
+    description: 'คำนวณต้นทุนวัตถุดิบและสูตรอาหาร' 
+  },
+
+  // ===== หน้าสูตรอาหาร =====
+  { 
+    id: 'recipes', 
+    name: 'สูตรอาหาร', 
+    icon: '📖', 
+    description: 'ดูและจัดการสูตรอาหาร' 
+  },
+  { 
+    id: 'compare', 
+    name: 'เปรียบเทียบสูตร', 
+    icon: '📊', 
+    description: 'เปรียบเทียบสูตรอาหาร' 
+  },
+
+  // ===== หน้าวิเคราะห์ =====
+  { 
+    id: 'statistics', 
+    name: 'วิเคราะห์สถิติ', 
+    icon: '📈', 
+    description: 'วิเคราะห์ข้อมูลทางสถิติ ANOVA, t-test' 
+  },
+  { 
+    id: 'sensory', 
+    name: 'วิเคราะห์ประสาทสัมผัส', 
+    icon: '🧪', 
+    description: 'วิเคราะห์ผลทดสอบทางประสาทสัมผัส' 
+  },
+
+  // ===== หน้าจัดการ =====
+  { 
+    id: 'manage-items', 
+    name: 'จัดการวัตถุดิบ', 
+    icon: '🥗', 
+    description: 'เพิ่ม/แก้ไข/ลบวัตถุดิบและเมนู' 
+  },
+
+  // ===== หน้า Admin =====
+  { 
+    id: 'admin', 
+    name: 'Admin Console', 
+    icon: '⚙️', 
+    description: 'จัดการผู้ใช้และระบบ' 
+  },
+  { 
+    id: 'manage-roles', 
+    name: 'จัดการบทบาท', 
+    icon: '🎭', 
+    description: 'สร้าง/แก้ไข/ลบบทบาท' 
+  },
+
+  // ============================================
+  // 👇 เพิ่มหน้าใหม่ที่นี่! 👇
+  // ============================================
+  // ตัวอย่าง:
+  // { 
+  //   id: 'new-page',           // key ที่ใช้เช็คสิทธิ์ (ต้องไม่ซ้ำ)
+  //   name: 'หน้าใหม่',          // ชื่อที่แสดงใน checkbox
+  //   icon: '🆕',               // ไอคอน
+  //   description: 'คำอธิบาย'   // คำอธิบาย
+  // },
 ]
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [role, setRole] = useState('user')
-  const [roleData, setRoleData] = useState(null) // ข้อมูล role เต็ม
+  const [roleData, setRoleData] = useState(null)
   const [allRoles, setAllRoles] = useState(DEFAULT_ROLES)
   const [permissions, setPermissions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -86,7 +176,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
-        // โหลด roles ก่อน
         const roles = await loadRoles()
 
         if (!firebaseUser) {
@@ -106,7 +195,6 @@ export const AuthProvider = ({ children }) => {
         let userRole = 'user'
 
         if (!snap.exists()) {
-          // สร้าง user ใหม่
           await setDoc(userRef, {
             uid: firebaseUser.uid,
             email: firebaseUser.email || '',
@@ -121,7 +209,6 @@ export const AuthProvider = ({ children }) => {
 
         setRole(userRole)
 
-        // หา role data และ permissions
         const currentRoleData = roles[userRole] || DEFAULT_ROLES.user
         setRoleData(currentRoleData)
         setPermissions(currentRoleData?.permissions || [])
@@ -139,25 +226,20 @@ export const AuthProvider = ({ children }) => {
     return () => unsub()
   }, [])
 
-  // ฟังก์ชันตรวจสอบ permission
   const hasPermission = (permissionId) => {
     return permissions.includes(permissionId)
   }
 
-  // ฟังก์ชันตรวจสอบหลาย permissions (ต้องมีทั้งหมด)
   const hasAllPermissions = (permissionIds) => {
     return permissionIds.every((p) => permissions.includes(p))
   }
 
-  // ฟังก์ชันตรวจสอบหลาย permissions (มีอย่างน้อยหนึ่ง)
   const hasAnyPermission = (permissionIds) => {
     return permissionIds.some((p) => permissions.includes(p))
   }
 
-  // รีโหลด roles (เรียกหลังจากแก้ไข roles)
   const refreshRoles = async () => {
     const roles = await loadRoles()
-    // อัพเดท permissions ของ user ปัจจุบัน
     const currentRoleData = roles[role] || DEFAULT_ROLES.user
     setRoleData(currentRoleData)
     setPermissions(currentRoleData?.permissions || [])
