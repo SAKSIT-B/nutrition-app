@@ -17,6 +17,8 @@ import SensoryEvaluation from './SensoryEvaluation'
 import ProfileSettings from './ProfileSettings'  // เพิ่ม import
 import VersionChecker from '../components/VersionChecker'
 import { useAuth } from '../contexts/AuthContext'
+import ShelfLifeCalculator from './ShelfLifeCalculator'
+
 
 // ===== HomeOverview Component =====
 const HomeOverview = () => {
@@ -340,6 +342,16 @@ const Dashboard = () => {
               }
             />
 
+            {/* หน้าเก็บรักษา */}
+<Route
+  path="shelf-life"
+  element={
+    <ProtectedPage permission="nutrition">
+      <ShelfLifeCalculator />
+    </ProtectedPage>
+  }
+/>
+            
             {/* หน้าเปรียบเทียบสูตร */}
             <Route
               path="compare"
@@ -410,3 +422,4 @@ const Dashboard = () => {
 }
 
 export default Dashboard
+
