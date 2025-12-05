@@ -2,7 +2,7 @@
 // เครื่องมือคำนวณอายุการเก็บรักษาผลิตภัณฑ์อาหาร
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, getDocs, deleteDoc, doc, query as firestoreQuery, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -10,12 +10,45 @@ import { useToast } from '../contexts/ToastContext';
 // ค่าคงที่
 const GAS_CONSTANT = 8.314; // J/(mol·K)
 
+// Helper Functions (ประกาศก่อน Component)
+const getAwCategory = (aw) => {
+  if (aw < 0.3) return { name: 'แห้งมาก', color: '#10b981', organisms: 'ไม่มีจุลินทรีย์เจริญ' };
+  if (aw < 0.5) return { name: 'แห้ง', color: '#22c55e', organisms: 'ออสโมฟิลิกยีสต์บางชนิด' };
+  if (aw < 0.6) return { name: 'กึ่งแห้ง', color: '#84cc16', organisms: 'ยีสต์และราบางชนิด' };
+  if (aw < 0.7) return { name: 'ชื้นเล็กน้อย', color: '#eab308', organisms: 'ราส่วนใหญ่' };
+  if (aw < 0.85) return { name: 'ชื้นปานกลาง', color: '#f97316', organisms: 'ยีสต์และแบคทีเรียหลายชนิด' };
+  if (aw < 0.95) return { name: 'ชื้นมาก', color: '#ef4444', organisms: 'แบคทีเรียก่อโรคส่วนใหญ่' };
+  return { name: 'เปียก', color: '#dc2626', organisms: 'จุลินทรีย์ทุกชนิด' };
+};
+
+const getRiskColor = (level) => {
+  const colors = {
+    'very-low': '#10b981',
+    'low': '#22c55e',
+    'medium': '#eab308',
+    'high': '#f97316',
+    'very-high': '#ef4444',
+  };
+  return colors[level] || '#6b7280';
+};
+
+const getRiskLabel = (level) => {
+  const labels = {
+    'very-low': 'ต่ำมาก',
+    'low': 'ต่ำ',
+    'medium': 'ปานกลาง',
+    'high': 'สูง',
+    'very-high': 'สูงมาก',
+  };
+  return labels[level] || 'ไม่ทราบ';
+};
+
 const ShelfLifeCalculator = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
 
   // State หลัก
-  const [activeTab, setActiveTab] = useState('q10'); // q10, arrhenius, water-activity
+  const [activeTab, setActiveTab] = useState('q10');
   const [savedTests, setSavedTests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -23,10 +56,10 @@ const ShelfLifeCalculator = () => {
 
   // ===== Q10 Method State =====
   const [q10Data, setQ10Data] = useState({
-    knownShelfLife: 30, // วัน
-    knownTemp: 35, // °C
-    targetTemp: 25, // °C
-    q10Value: 2, // ค่า Q10
+    knownShelfLife: 30,
+    knownTemp: 35,
+    targetTemp: 25,
+    q10Value: 2,
   });
 
   // ===== Arrhenius Method State =====
@@ -45,21 +78,21 @@ const ShelfLifeCalculator = () => {
     pH: 5.5,
     temperature: 25,
     preservatives: false,
-    packaging: 'vacuum', // normal, vacuum, modified-atmosphere, nitrogen
-    productType: 'dried', // fresh, dried, semi-dried, frozen
+    packaging: 'vacuum',
+    productType: 'dried',
   });
 
   // ===== ดึงข้อมูลการทดสอบที่บันทึกไว้ =====
   useEffect(() => {
     const fetchSavedTests = async () => {
       try {
-        const q = query(collection(db, 'shelfLifeTests'), orderBy('createdAt', 'desc'));
+        const q = firestoreQuery(collection(db, 'shelfLifeTests'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
-        const tests = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
+        const testsData = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data()
         }));
-        setSavedTests(tests);
+        setSavedTests(testsData);
       } catch (error) {
         console.error('Error fetching tests:', error);
       }
@@ -86,55 +119,52 @@ const ShelfLifeCalculator = () => {
     const { testPoints, targetTemp } = arrheniusData;
     
     if (testPoints.length < 2) {
-      return { predictedDays: 0, Ea: 0, A: 0, rSquared: 0, graphData: [] };
+      return { predictedDays: 0, Ea: 0, A: 0, rSquared: 0, graphData: [], testPoints: [] };
     }
 
     // แปลงข้อมูลสำหรับ Linear Regression
-    // ln(k) = ln(A) - Ea/(R*T)
-    // โดย k = 1/shelfLife
-    const points = testPoints.map(p => ({
-      x: 1 / (p.temp + 273.15), // 1/T (Kelvin)
-      y: Math.log(1 / p.shelfLife), // ln(k)
-      temp: p.temp,
-      shelfLife: p.shelfLife,
+    const points = testPoints.map(pt => ({
+      x: 1 / (pt.temp + 273.15),
+      y: Math.log(1 / pt.shelfLife),
+      temp: pt.temp,
+      shelfLife: pt.shelfLife,
     }));
 
     // Linear Regression
     const n = points.length;
-    const sumX = points.reduce((s, p) => s + p.x, 0);
-    const sumY = points.reduce((s, p) => s + p.y, 0);
-    const sumXY = points.reduce((s, p) => s + p.x * p.y, 0);
-    const sumX2 = points.reduce((s, p) => s + p.x * p.x, 0);
-    const sumY2 = points.reduce((s, p) => s + p.y * p.y, 0);
+    const sumX = points.reduce((acc, pt) => acc + pt.x, 0);
+    const sumY = points.reduce((acc, pt) => acc + pt.y, 0);
+    const sumXY = points.reduce((acc, pt) => acc + pt.x * pt.y, 0);
+    const sumX2 = points.reduce((acc, pt) => acc + pt.x * pt.x, 0);
 
     const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
     const intercept = (sumY - slope * sumX) / n;
 
     // คำนวณ Ea และ A
-    const Ea = -slope * GAS_CONSTANT / 1000; // kJ/mol
+    const Ea = -slope * GAS_CONSTANT / 1000;
     const A = Math.exp(intercept);
 
     // คำนวณ R²
     const yMean = sumY / n;
-    const ssTotal = points.reduce((s, p) => s + Math.pow(p.y - yMean, 2), 0);
-    const ssResidual = points.reduce((s, p) => {
-      const yPred = intercept + slope * p.x;
-      return s + Math.pow(p.y - yPred, 2);
+    const ssTotal = points.reduce((acc, pt) => acc + Math.pow(pt.y - yMean, 2), 0);
+    const ssResidual = points.reduce((acc, pt) => {
+      const yPred = intercept + slope * pt.x;
+      return acc + Math.pow(pt.y - yPred, 2);
     }, 0);
-    const rSquared = 1 - ssResidual / ssTotal;
+    const rSquared = ssTotal > 0 ? 1 - ssResidual / ssTotal : 0;
 
     // ทำนายอายุที่อุณหภูมิเป้าหมาย
     const targetTempK = targetTemp + 273.15;
     const kTarget = A * Math.exp(-Ea * 1000 / (GAS_CONSTANT * targetTempK));
-    const predictedShelfLife = 1 / kTarget;
+    const predictedShelfLife = kTarget > 0 ? 1 / kTarget : 0;
 
     // สร้างข้อมูลสำหรับกราฟ
     const graphData = [];
-    for (let t = 5; t <= 50; t += 5) {
-      const tempK = t + 273.15;
+    for (let temp = 5; temp <= 50; temp += 5) {
+      const tempK = temp + 273.15;
       const k = A * Math.exp(-Ea * 1000 / (GAS_CONSTANT * tempK));
-      const sl = 1 / k;
-      graphData.push({ temp: t, shelfLife: Math.min(sl, 365) });
+      const sl = k > 0 ? 1 / k : 0;
+      graphData.push({ temp: temp, shelfLife: Math.min(sl, 365) });
     }
 
     return {
@@ -144,7 +174,7 @@ const ShelfLifeCalculator = () => {
       Ea: Ea.toFixed(2),
       A: A.toExponential(2),
       rSquared: rSquared.toFixed(4),
-      graphData,
+      graphData: graphData,
       testPoints: points,
     };
   }, [arrheniusData]);
@@ -155,8 +185,8 @@ const ShelfLifeCalculator = () => {
     
     let baseShelfLife = 0;
     let riskLevel = 'low';
-    let riskFactors = [];
-    let recommendations = [];
+    const riskFactors = [];
+    const recommendations = [];
 
     // ประเมินจาก aw
     if (aw < 0.3) {
@@ -239,45 +269,12 @@ const ShelfLifeCalculator = () => {
       predictedDays: Math.round(baseShelfLife),
       predictedWeeks: (baseShelfLife / 7).toFixed(1),
       predictedMonths: (baseShelfLife / 30).toFixed(1),
-      riskLevel,
-      riskFactors,
-      recommendations,
+      riskLevel: riskLevel,
+      riskFactors: riskFactors,
+      recommendations: recommendations,
       awCategory: getAwCategory(aw),
     };
   }, [waterActivityData]);
-
-  // ===== Helper Functions =====
-  const getAwCategory = (aw) => {
-    if (aw < 0.3) return { name: 'แห้งมาก', color: '#10b981', organisms: 'ไม่มีจุลินทรีย์เจริญ' };
-    if (aw < 0.5) return { name: 'แห้ง', color: '#22c55e', organisms: 'ออสโมฟิลิกยีสต์บางชนิด' };
-    if (aw < 0.6) return { name: 'กึ่งแห้ง', color: '#84cc16', organisms: 'ยีสต์และราบางชนิด' };
-    if (aw < 0.7) return { name: 'ชื้นเล็กน้อย', color: '#eab308', organisms: 'ราส่วนใหญ่' };
-    if (aw < 0.85) return { name: 'ชื้นปานกลาง', color: '#f97316', organisms: 'ยีสต์และแบคทีเรียหลายชนิด' };
-    if (aw < 0.95) return { name: 'ชื้นมาก', color: '#ef4444', organisms: 'แบคทีเรียก่อโรคส่วนใหญ่' };
-    return { name: 'เปียก', color: '#dc2626', organisms: 'จุลินทรีย์ทุกชนิด' };
-  };
-
-  const getRiskColor = (level) => {
-    const colors = {
-      'very-low': '#10b981',
-      'low': '#22c55e',
-      'medium': '#eab308',
-      'high': '#f97316',
-      'very-high': '#ef4444',
-    };
-    return colors[level] || '#6b7280';
-  };
-
-  const getRiskLabel = (level) => {
-    const labels = {
-      'very-low': 'ต่ำมาก',
-      'low': 'ต่ำ',
-      'medium': 'ปานกลาง',
-      'high': 'สูง',
-      'very-high': 'สูงมาก',
-    };
-    return labels[level] || 'ไม่ทราบ';
-  };
 
   // ===== Arrhenius Test Points Management =====
   const addTestPoint = () => {
@@ -290,15 +287,15 @@ const ShelfLifeCalculator = () => {
   const removeTestPoint = (index) => {
     setArrheniusData(prev => ({
       ...prev,
-      testPoints: prev.testPoints.filter((_, i) => i !== index)
+      testPoints: prev.testPoints.filter((_, idx) => idx !== index)
     }));
   };
 
   const updateTestPoint = (index, field, value) => {
     setArrheniusData(prev => ({
       ...prev,
-      testPoints: prev.testPoints.map((p, i) => 
-        i === index ? { ...p, [field]: parseFloat(value) || 0 } : p
+      testPoints: prev.testPoints.map((pt, idx) => 
+        idx === index ? { ...pt, [field]: parseFloat(value) || 0 } : pt
       )
     }));
   };
@@ -330,8 +327,8 @@ const ShelfLifeCalculator = () => {
 
       await addDoc(collection(db, 'shelfLifeTests'), {
         name: testName.trim(),
-        method,
-        data,
+        method: method,
+        data: data,
         result: {
           predictedDays: result.predictedDays,
           predictedMonths: result.predictedMonths,
@@ -345,13 +342,13 @@ const ShelfLifeCalculator = () => {
       setTestName('');
 
       // Refresh list
-      const q = query(collection(db, 'shelfLifeTests'), orderBy('createdAt', 'desc'));
+      const q = firestoreQuery(collection(db, 'shelfLifeTests'), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
-      const tests = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      const testsData = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
       }));
-      setSavedTests(tests);
+      setSavedTests(testsData);
     } catch (error) {
       console.error('Error saving test:', error);
       showToast('เกิดข้อผิดพลาดในการบันทึก', 'error');
@@ -598,7 +595,7 @@ const ShelfLifeCalculator = () => {
               </div>
 
               {/* Simple Graph */}
-              {arrheniusResult.graphData.length > 0 && (
+              {arrheniusResult.graphData && arrheniusResult.graphData.length > 0 && (
                 <div className="arrhenius-graph">
                   <h4>📊 กราฟความสัมพันธ์อุณหภูมิ-อายุการเก็บ</h4>
                   <div className="graph-container">
@@ -606,9 +603,9 @@ const ShelfLifeCalculator = () => {
                       <span>อายุ (วัน)</span>
                     </div>
                     <div className="graph-area">
-                      {arrheniusResult.graphData.map((point, i) => (
+                      {arrheniusResult.graphData.map((point, idx) => (
                         <div 
-                          key={i}
+                          key={idx}
                           className="graph-bar"
                           style={{ 
                             height: `${Math.min(point.shelfLife / 365 * 100, 100)}%`,
@@ -620,9 +617,9 @@ const ShelfLifeCalculator = () => {
                         </div>
                       ))}
                       {/* Test Points */}
-                      {arrheniusResult.testPoints?.map((point, i) => (
+                      {arrheniusResult.testPoints && arrheniusResult.testPoints.map((point, idx) => (
                         <div 
-                          key={`test-${i}`}
+                          key={`test-${idx}`}
                           className="graph-point"
                           style={{ 
                             bottom: `${Math.min(point.shelfLife / 365 * 100, 100)}%`,
@@ -794,23 +791,23 @@ const ShelfLifeCalculator = () => {
                 ความเสี่ยง: {getRiskLabel(waterActivityResult.riskLevel)}
               </div>
               
-              {waterActivityResult.riskFactors.length > 0 && (
+              {waterActivityResult.riskFactors && waterActivityResult.riskFactors.length > 0 && (
                 <div className="risk-factors">
                   <h5>🔴 ปัจจัยเสี่ยง:</h5>
                   <ul>
-                    {waterActivityResult.riskFactors.map((factor, i) => (
-                      <li key={i}>{factor}</li>
+                    {waterActivityResult.riskFactors.map((factor, idx) => (
+                      <li key={idx}>{factor}</li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {waterActivityResult.recommendations.length > 0 && (
+              {waterActivityResult.recommendations && waterActivityResult.recommendations.length > 0 && (
                 <div className="recommendations">
                   <h5>💡 คำแนะนำ:</h5>
                   <ul>
-                    {waterActivityResult.recommendations.map((rec, i) => (
-                      <li key={i}>{rec}</li>
+                    {waterActivityResult.recommendations.map((rec, idx) => (
+                      <li key={idx}>{rec}</li>
                     ))}
                   </ul>
                 </div>
