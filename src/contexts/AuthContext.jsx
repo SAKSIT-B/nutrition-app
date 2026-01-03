@@ -114,6 +114,13 @@ export const ALL_PERMISSIONS = [
     description: 'วิเคราะห์ผลทดสอบทางประสาทสัมผัส'
   },
 
+  {
+    id: 'shelf-life',
+    name: 'อายุการเก็บรักษา',
+    icon: '⏱️',
+    description: 'เข้าถึงหน้าอายุการเก็บรักษา'
+  },
+
   // ===== หน้าจัดการ =====
   {
     id: 'manage-items',
@@ -272,3 +279,4 @@ export const AuthProvider = ({ children }) => {
 }
 
 export const useAuth = () => useContext(AuthContext)
+
