@@ -61,7 +61,7 @@ const MENU_ITEMS = [
   path: '/dashboard/shelf-life',
   label: 'อายุการเก็บรักษา',
   icon: '⏱️',
-  permission: 'nutrition',
+  permission: 'shelf-life',
 },
   
   {
@@ -142,4 +142,5 @@ const Sidebar = () => {
 }
 
 export default Sidebar
+
 
