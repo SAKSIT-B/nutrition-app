@@ -39,6 +39,12 @@ export const ALL_PERMISSIONS = [
     icon: '⚙️',
     description: 'เข้าถึงหน้า Admin Console'
   },
+ {
+    key: 'nutrition',
+    label: 'อายุการเก็บรักษา',
+    icon: '⏱️',
+    description: 'เข้าถึงหน้าอายุการเก็บรักษา'
+  },
   {
     key: 'manage-roles',
     label: 'จัดการบทบาท',
@@ -50,8 +56,8 @@ export const ALL_PERMISSIONS = [
 // Permission เริ่มต้นสำหรับแต่ละ Role
 export const DEFAULT_ROLE_PERMISSIONS = {
   owner: ALL_PERMISSIONS.map(p => p.key), // Owner มีทุก permission
-  admin: ['nutrition', 'thai-rdi', 'recipes', 'compare', 'manage-items', 'admin', 'manage-roles'],
-  editor: ['nutrition', 'thai-rdi', 'recipes', 'compare', 'manage-items'],
+  admin: ['nutrition', 'thai-rdi', 'recipes', 'compare', 'manage-items', 'admin', 'manage-roles', 'nutrition'],
+  editor: ['nutrition', 'thai-rdi', 'recipes', 'compare', 'manage-items', 'nutrition'],
   moderator: ['nutrition', 'thai-rdi', 'recipes', 'compare'],
   teacher: ['nutrition', 'thai-rdi', 'recipes', 'compare'],
   student: ['nutrition', 'thai-rdi', 'recipes', 'compare'],
