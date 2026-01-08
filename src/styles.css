@@ -14508,11 +14508,13 @@ body.theme-dark .recipe-badge.private {
   }
 }
 
+
+
+
 /* ===================================
    Session Security Styles
    CSS สำหรับระบบ Session Timeout
    และ Single Device Login
-   เพิ่มต่อท้าย styles.css
    =================================== */
 
 /* ===== Session Alert Modal ===== */
@@ -14525,7 +14527,7 @@ body.theme-dark .recipe-badge.private {
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  animation: fadeIn 0.3s ease;
+  animation: sessionFadeIn 0.3s ease;
 }
 
 .session-alert-modal {
@@ -14536,16 +14538,16 @@ body.theme-dark .recipe-badge.private {
   width: 90%;
   text-align: center;
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
-  animation: slideUp 0.4s ease;
+  animation: sessionSlideUp 0.4s ease;
 }
 
 .session-alert-icon {
   font-size: 4rem;
   margin-bottom: 20px;
-  animation: bounce 0.6s ease;
+  animation: sessionBounce 0.6s ease;
 }
 
-@keyframes bounce {
+@keyframes sessionBounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
@@ -14592,10 +14594,10 @@ body.theme-dark .recipe-badge.private {
   color: white;
   padding: 10px 20px;
   z-index: 9998;
-  animation: slideDown 0.3s ease;
+  animation: sessionSlideDown 0.3s ease;
 }
 
-@keyframes slideDown {
+@keyframes sessionSlideDown {
   from {
     transform: translateY(-100%);
   }
@@ -14615,10 +14617,10 @@ body.theme-dark .recipe-badge.private {
 
 .time-warning-icon {
   font-size: 1.2rem;
-  animation: pulse 1.5s infinite;
+  animation: sessionPulse 1.5s infinite;
 }
 
-@keyframes pulse {
+@keyframes sessionPulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
@@ -14776,29 +14778,29 @@ body.theme-dark .recipe-badge.private {
 }
 
 /* ===== Dark Mode Support ===== */
-[data-theme="dark"] .session-alert-modal {
+body.theme-dark .session-alert-modal {
   background: #1f2937;
 }
 
-[data-theme="dark"] .session-alert-title {
+body.theme-dark .session-alert-title {
   color: #f9fafb;
 }
 
-[data-theme="dark"] .session-alert-message {
+body.theme-dark .session-alert-message {
   color: #9ca3af;
 }
 
-[data-theme="dark"] .login-security-info {
+body.theme-dark .login-security-info {
   background: rgba(99, 102, 241, 0.15);
 }
 
 /* ===== Animation Keyframes ===== */
-@keyframes fadeIn {
+@keyframes sessionFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes slideUp {
+@keyframes sessionSlideUp {
   from {
     opacity: 0;
     transform: translateY(30px) scale(0.95);
@@ -14808,5 +14810,3 @@ body.theme-dark .recipe-badge.private {
     transform: translateY(0) scale(1);
   }
 }
-
-
