@@ -5,6 +5,7 @@ import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import SessionInfo from './SessionInfo'
 
 const Topbar = () => {
   const { user, role, roleData, logout } = useAuth()
@@ -84,6 +85,7 @@ const Topbar = () => {
       '/dashboard/admin': 'Admin Console',
       '/dashboard/statistics': 'วิเคราะห์สถิติ',
       '/dashboard/sensory': 'วิเคราะห์ประสาทสัมผัส',
+      '/dashboard/shelf-life': 'อายุการเก็บรักษา',
       '/dashboard/profile': 'ตั้งค่าโปรไฟล์',
     }
     return titles[path] || 'แดชบอร์ด'
@@ -219,6 +221,9 @@ const Topbar = () => {
         
         {/* ขวา - User controls */}
         <div className="topbar-right">
+          {/* Session Info - แสดงเวลาที่เหลือ */}
+          <SessionInfo />
+
           <button className="topbar-icon-btn" onClick={toggleTheme} title="เปลี่ยนธีม">
             {theme === 'light' ? '🌙' : '☀️'}
           </button>
