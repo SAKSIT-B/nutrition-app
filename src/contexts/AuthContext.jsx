@@ -21,17 +21,17 @@ import { auth, db } from ‘../firebase’
 const AuthContext = createContext(null)
 
 // ===== CONFIG =====
-const SESSION_TIMEOUT_HOURS = 5 // Session timeout 5 ชั่วโมง
+const SESSION_TIMEOUT_HOURS = 5
 const SESSION_TIMEOUT_MS = SESSION_TIMEOUT_HOURS * 60 * 60 * 1000
-const SESSION_CHECK_INTERVAL = 60 * 1000 // ตรวจสอบทุก 1 นาที
+const SESSION_CHECK_INTERVAL = 60 * 1000
 
-// Default roles (ใช้เมื่อยังไม่มีใน Firestore)
+// Default roles
 const DEFAULT_ROLES = {
 owner: {
 id: ‘owner’,
 name: ‘Owner’,
 color: ‘#f59e0b’,
-icon: ‘👑’,
+icon: ‘\u{1F451}’,
 priority: 100,
 permissions: [‘nutrition’, ‘thai-rdi’, ‘recipes’, ‘compare’, ‘cost’, ‘statistics’, ‘sensory’, ‘shelf-life’, ‘manage-items’, ‘admin’, ‘manage-roles’],
 isSystem: true,
@@ -40,7 +40,7 @@ admin: {
 id: ‘admin’,
 name: ‘Admin’,
 color: ‘#3b82f6’,
-icon: ‘🛡️’,
+icon: ‘\u{1F6E1}’,
 priority: 80,
 permissions: [‘nutrition’, ‘thai-rdi’, ‘recipes’, ‘compare’, ‘cost’, ‘statistics’, ‘sensory’, ‘shelf-life’, ‘manage-items’, ‘admin’],
 isSystem: true,
@@ -49,7 +49,7 @@ mod: {
 id: ‘mod’,
 name: ‘Moderator’,
 color: ‘#8b5cf6’,
-icon: ‘⭐’,
+icon: ‘\u{2B50}’,
 priority: 50,
 permissions: [‘nutrition’, ‘thai-rdi’, ‘recipes’, ‘compare’, ‘cost’, ‘statistics’, ‘sensory’, ‘shelf-life’, ‘manage-items’],
 isSystem: true,
@@ -58,26 +58,26 @@ user: {
 id: ‘user’,
 name: ‘User’,
 color: ‘#6b7280’,
-icon: ‘👤’,
+icon: ‘\u{1F464}’,
 priority: 10,
 permissions: [‘nutrition’, ‘thai-rdi’, ‘recipes’, ‘compare’, ‘cost’, ‘statistics’, ‘sensory’, ‘shelf-life’],
 isSystem: true,
 },
 }
 
-// รายการ permissions ทั้งหมดในระบบ
+// All permissions
 export const ALL_PERMISSIONS = [
-{ id: ‘nutrition’, name: ‘คำนวณโภชนาการ’, icon: ‘🧮’, description: ‘เข้าถึงหน้าคำนวณคุณค่าทางโภชนาการ’ },
-{ id: ‘thai-rdi’, name: ‘ฉลากโภชนาการ’, icon: ‘🏷️’, description: ‘สร้างฉลากโภชนาการ Thai RDI’ },
-{ id: ‘recipes’, name: ‘สูตรอาหาร’, icon: ‘📖’, description: ‘ดูและจัดการสูตรอาหาร’ },
-{ id: ‘compare’, name: ‘เปรียบเทียบสูตร’, icon: ‘📊’, description: ‘เปรียบเทียบสูตรอาหาร’ },
-{ id: ‘cost’, name: ‘คำนวณต้นทุน’, icon: ‘💰’, description: ‘คำนวณต้นทุนสูตรอาหาร’ },
-{ id: ‘statistics’, name: ‘วิเคราะห์สถิติ’, icon: ‘📈’, description: ‘วิเคราะห์ข้อมูลทางสถิติ’ },
-{ id: ‘sensory’, name: ‘ประเมินประสาทสัมผัส’, icon: ‘👅’, description: ‘วิเคราะห์ทางประสาทสัมผัส’ },
-{ id: ‘shelf-life’, name: ‘อายุการเก็บรักษา’, icon: ‘⏱️’, description: ‘คำนวณอายุการเก็บรักษา’ },
-{ id: ‘manage-items’, name: ‘จัดการวัตถุดิบ’, icon: ‘🥗’, description: ‘เพิ่ม/แก้ไข/ลบวัตถุดิบและเมนู’ },
-{ id: ‘admin’, name: ‘Admin Console’, icon: ‘⚙️’, description: ‘จัดการผู้ใช้และระบบ’ },
-{ id: ‘manage-roles’, name: ‘จัดการบทบาท’, icon: ‘🎭’, description: ‘สร้าง/แก้ไข/ลบบทบาท’ },
+{ id: ‘nutrition’, name: ‘Calculate Nutrition’, icon: ‘\u{1F9EE}’, description: ‘Access nutrition calculator’ },
+{ id: ‘thai-rdi’, name: ‘Thai RDI Label’, icon: ‘\u{1F3F7}’, description: ‘Create Thai RDI labels’ },
+{ id: ‘recipes’, name: ‘Recipes’, icon: ‘\u{1F4D6}’, description: ‘View and manage recipes’ },
+{ id: ‘compare’, name: ‘Compare Recipes’, icon: ‘\u{1F4CA}’, description: ‘Compare recipes’ },
+{ id: ‘cost’, name: ‘Cost Calculator’, icon: ‘\u{1F4B0}’, description: ‘Calculate recipe costs’ },
+{ id: ‘statistics’, name: ‘Statistics’, icon: ‘\u{1F4C8}’, description: ‘Statistical analysis’ },
+{ id: ‘sensory’, name: ‘Sensory Evaluation’, icon: ‘\u{1F445}’, description: ‘Sensory analysis’ },
+{ id: ‘shelf-life’, name: ‘Shelf Life’, icon: ‘\u{23F1}’, description: ‘Calculate shelf life’ },
+{ id: ‘manage-items’, name: ‘Manage Items’, icon: ‘\u{1F957}’, description: ‘Add/edit/delete items’ },
+{ id: ‘admin’, name: ‘Admin Console’, icon: ‘\u{2699}’, description: ‘Manage users and system’ },
+{ id: ‘manage-roles’, name: ‘Manage Roles’, icon: ‘\u{1F3AD}’, description: ‘Create/edit/delete roles’ },
 ]
 
 export const AuthProvider = ({ children }) => {
@@ -99,7 +99,7 @@ const sessionListenerRef = useRef(null)
 const currentSessionIdRef = useRef(null)
 const isProcessingAuthRef = useRef(false)
 
-// ===== ตั้งค่า Session Persistence =====
+// Setup Session Persistence
 useEffect(() => {
 const setupPersistence = async () => {
 try {
@@ -111,12 +111,11 @@ console.error(‘Error setting persistence:’, error)
 setupPersistence()
 }, [])
 
-// ===== Force Logout Function =====
+// Force Logout Function
 const forceLogout = useCallback(async (reason = ‘unknown’) => {
 console.log(‘Force logout triggered:’, reason)
 
 ```
-// Clear intervals and listeners
 if (sessionCheckIntervalRef.current) {
   clearInterval(sessionCheckIntervalRef.current)
   sessionCheckIntervalRef.current = null
@@ -126,19 +125,16 @@ if (sessionListenerRef.current) {
   sessionListenerRef.current = null
 }
 
-// Clear session storage
 sessionStorage.removeItem('sessionId')
 sessionStorage.removeItem('sessionExpiry')
 sessionStorage.removeItem('loginTime')
 
-// Set logout reason before signing out (ยกเว้น manual)
 if (reason !== 'manual') {
   setLogoutReason(reason)
 }
 
 const currentUid = user?.uid
 
-// Clear state first
 setUser(null)
 setRole('guest')
 setRoleData(null)
@@ -148,7 +144,6 @@ setTimeRemaining(null)
 currentSessionIdRef.current = null
 
 try {
-  // Clear session in Firestore
   if (currentUid) {
     await updateDoc(doc(db, 'users', currentUid), {
       currentSessionId: null,
@@ -159,7 +154,6 @@ try {
   console.error('Error clearing session:', error)
 }
 
-// Sign out from Firebase
 try {
   await signOut(auth)
 } catch (error) {
@@ -169,7 +163,7 @@ try {
 
 }, [user])
 
-// ===== Check Session Timeout =====
+// Check Session Timeout
 const checkSessionTimeout = useCallback(() => {
 const expiry = sessionStorage.getItem(‘sessionExpiry’)
 
@@ -190,19 +184,16 @@ if (expiry) {
 
 }, [forceLogout])
 
-// ===== Start Session Timer =====
+// Start Session Timer
 const startSessionTimer = useCallback(() => {
-// Clear existing interval
 if (sessionCheckIntervalRef.current) {
 clearInterval(sessionCheckIntervalRef.current)
 }
 
 ```
-// ตรวจสอบว่ามี expiry อยู่แล้วหรือไม่ (จาก Login.jsx)
 let expiryTime = sessionStorage.getItem('sessionExpiry')
 
 if (!expiryTime) {
-  // ถ้ายังไม่มี ให้สร้างใหม่
   expiryTime = Date.now() + SESSION_TIMEOUT_MS
   sessionStorage.setItem('sessionExpiry', expiryTime.toString())
   sessionStorage.setItem('loginTime', Date.now().toString())
@@ -213,27 +204,23 @@ if (!expiryTime) {
 setSessionExpiry(expiryTime)
 setTimeRemaining(Math.max(0, expiryTime - Date.now()))
 
-// Start checking interval
 sessionCheckIntervalRef.current = setInterval(() => {
   checkSessionTimeout()
 }, SESSION_CHECK_INTERVAL)
 
-// Initial check
 checkSessionTimeout()
 ```
 
 }, [checkSessionTimeout])
 
-// ===== Listen for Session Changes (Single Device) =====
+// Listen for Session Changes (Single Device)
 const startSessionListener = useCallback((userId, mySessionId) => {
-// Unsubscribe previous listener
 if (sessionListenerRef.current) {
 sessionListenerRef.current()
 sessionListenerRef.current = null
 }
 
 ```
-// ถ้าไม่มี session ID ไม่ต้อง listen
 if (!mySessionId) return
 
 sessionListenerRef.current = onSnapshot(
@@ -243,8 +230,6 @@ sessionListenerRef.current = onSnapshot(
       const data = docSnapshot.data()
       const serverSessionId = data.currentSessionId
       
-      // ตรวจสอบว่า session ID ตรงกันหรือไม่
-      // ถ้า server มี session ID และไม่ตรงกับของเรา = มีคนอื่น login
       if (serverSessionId && mySessionId && serverSessionId !== mySessionId) {
         console.log('Another device logged in:', serverSessionId, 'vs', mySessionId)
         forceLogout('another_device')
@@ -259,7 +244,7 @@ sessionListenerRef.current = onSnapshot(
 
 }, [forceLogout])
 
-// โหลด roles ทั้งหมดจาก Firestore
+// Load roles from Firestore
 const loadRoles = async () => {
 try {
 const rolesSnap = await getDocs(collection(db, ‘roles’))
@@ -272,14 +257,13 @@ setAllRoles(rolesData)
 return rolesData
 }
 } catch (err) {
-console.error(‘โหลด roles ล้มเหลว:’, err)
+console.error(‘Load roles failed:’, err)
 }
 return DEFAULT_ROLES
 }
 
 useEffect(() => {
 const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-// ป้องกัน race condition
 if (isProcessingAuthRef.current) {
 return
 }
@@ -311,8 +295,7 @@ isProcessingAuthRef.current = true
       return
     }
 
-    // รอให้ sessionStorage มีค่าก่อน (จาก Login.jsx)
-    // รอสูงสุด 2 วินาที
+    // Wait for sessionStorage to have value (from Login.jsx)
     let storedSessionId = sessionStorage.getItem('sessionId')
     let attempts = 0
     while (!storedSessionId && attempts < 20) {
@@ -321,7 +304,6 @@ isProcessingAuthRef.current = true
       attempts++
     }
     
-    // ถ้ายังไม่มี session ID หลังจากรอ = ปิด browser มาแล้วเปิดใหม่
     if (!storedSessionId) {
       console.log('No session ID found after waiting, logging out')
       await signOut(auth)
@@ -330,7 +312,6 @@ isProcessingAuthRef.current = true
       return
     }
     
-    // ตรวจสอบว่า session หมดอายุหรือยัง
     const storedExpiry = sessionStorage.getItem('sessionExpiry')
     if (storedExpiry) {
       const expiryTime = parseInt(storedExpiry, 10)
@@ -347,14 +328,12 @@ isProcessingAuthRef.current = true
       }
     }
 
-    // ตรวจสอบว่า session ตรงกับใน Firestore หรือไม่
     const userRef = doc(db, 'users', firebaseUser.uid)
     const snap = await getDoc(userRef)
 
     if (snap.exists()) {
       const userData = snap.data()
       
-      // ตรวจสอบ session ID ตรงกันหรือไม่
       if (userData.currentSessionId && userData.currentSessionId !== storedSessionId) {
         console.log('Session mismatch:', userData.currentSessionId, 'vs', storedSessionId)
         setLogoutReason('another_device')
@@ -368,14 +347,12 @@ isProcessingAuthRef.current = true
       }
     }
 
-    // Session valid - set user
     setUser(firebaseUser)
     currentSessionIdRef.current = storedSessionId
 
     let userRole = 'user'
 
     if (!snap.exists()) {
-      // สร้าง user ใหม่
       await setDoc(userRef, {
         uid: firebaseUser.uid,
         email: firebaseUser.email || '',
@@ -396,11 +373,9 @@ isProcessingAuthRef.current = true
     setRoleData(currentRoleData)
     setPermissions(currentRoleData?.permissions || [])
     
-    // Start session timer and listener
     startSessionTimer()
     startSessionListener(firebaseUser.uid, storedSessionId)
     
-    // Clear logout reason on successful login
     setLogoutReason(null)
 
   } catch (err) {
@@ -427,7 +402,6 @@ return () => {
 
 }, [startSessionTimer, startSessionListener])
 
-// ฟังก์ชันตรวจสอบ permission
 const hasPermission = (permissionId) => {
 return permissions.includes(permissionId)
 }
@@ -440,7 +414,6 @@ const hasAnyPermission = (permissionIds) => {
 return permissionIds.some((p) => permissions.includes(p))
 }
 
-// รีโหลด roles
 const refreshRoles = async () => {
 const roles = await loadRoles()
 const currentRoleData = roles[role] || DEFAULT_ROLES.user
@@ -448,12 +421,10 @@ setRoleData(currentRoleData)
 setPermissions(currentRoleData?.permissions || [])
 }
 
-// Clear logout reason
 const clearLogoutReason = () => {
 setLogoutReason(null)
 }
 
-// Format time remaining
 const formatTimeRemaining = () => {
 if (!timeRemaining) return null
 
@@ -462,9 +433,9 @@ const hours = Math.floor(timeRemaining / (1000 * 60 * 60))
 const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60))
 
 if (hours > 0) {
-  return `${hours} ชม. ${minutes} นาที`
+  return hours + ' hrs ' + minutes + ' min'
 }
-return `${minutes} นาที`
+return minutes + ' min'
 ```
 
 }
@@ -485,7 +456,6 @@ hasPermission,
 hasAllPermissions,
 hasAnyPermission,
 refreshRoles,
-// Session info
 sessionExpiry,
 timeRemaining,
 formatTimeRemaining,
