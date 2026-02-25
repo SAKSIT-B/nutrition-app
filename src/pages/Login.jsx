@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signInWithEmailAndPassword } from 'firebase/auth'
-import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useToast } from '../contexts/ToastContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -10,12 +10,12 @@ import logo1 from '../assets/logo1.png'
 import logo2 from '../assets/logo2.png'
 import logo3 from '../assets/logo3.png'
 
-// ===== Generate Unique Session ID =====
+const SESSION_TIMEOUT_MS = 5 * 60 * 60 * 1000
+
 const generateSessionId = () => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
-// ===== Get Device Info =====
 const getDeviceInfo = () => {
   const ua = navigator.userAgent
   let device = 'Unknown Device'
@@ -40,7 +40,7 @@ const Login = () => {
   const { showToast } = useToast()
   const { user, logoutReason, clearLogoutReason, SESSION_TIMEOUT_HOURS } = useAuth()
 
-  // ✅ ถ้า user มีค่าแล้ว (login สำเร็จ) ให้ไปหน้า dashboard
+  // ถ้า user มีค่าแล้ว (login สำเร็จ) ให้ไปหน้า dashboard
   useEffect(() => {
     if (user) {
       navigate('/dashboard', { replace: true })
@@ -94,36 +94,52 @@ const Login = () => {
         email = userData.email
       }
 
-      // ✅ สร้าง session ก่อน login
+      // ✅ สร้าง session ID ใหม่
       const newSessionId = generateSessionId()
       const deviceInfo = getDeviceInfo()
-      
-      // ✅ บันทึก session ลง sessionStorage ก่อน
-      sessionStorage.setItem('sessionId', newSessionId)
-      sessionStorage.setItem('sessionExpiry', (Date.now() + 5 * 60 * 60 * 1000).toString())
-      sessionStorage.setItem('loginTime', Date.now().toString())
+      const expiryTime = Date.now() + SESSION_TIMEOUT_MS
 
-      // ล็อกอินด้วย email
+      // ✅ ล็อกอินด้วย email ก่อน
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      const uid = userCredential.user.uid
+
+      // ✅ อัพเดท Firestore ก่อน sessionStorage
+      const userRef = doc(db, 'users', uid)
+      const userSnap = await getDoc(userRef)
       
-      // อัพเดท session ใน Firestore
-      try {
-        await updateDoc(doc(db, 'users', userCredential.user.uid), {
+      if (userSnap.exists()) {
+        // User มีอยู่แล้ว - อัพเดท session
+        await updateDoc(userRef, {
           currentSessionId: newSessionId,
           lastLogin: serverTimestamp(),
           lastDevice: deviceInfo
         })
-      } catch (updateError) {
-        console.log('Update session error:', updateError)
+      } else {
+        // User ใหม่ - สร้าง document
+        await setDoc(userRef, {
+          uid: uid,
+          email: userCredential.user.email || '',
+          displayName: userCredential.user.displayName || '',
+          role: 'user',
+          currentSessionId: newSessionId,
+          lastLogin: serverTimestamp(),
+          lastDevice: deviceInfo,
+          createdAt: serverTimestamp()
+        })
       }
 
+      // ✅ บันทึก session ลง sessionStorage หลังจาก Firestore อัพเดทเสร็จ
+      sessionStorage.setItem('sessionId', newSessionId)
+      sessionStorage.setItem('sessionExpiry', expiryTime.toString())
+      sessionStorage.setItem('loginTime', Date.now().toString())
+
       showToast('เข้าสู่ระบบสำเร็จ', 'success')
-      // ✅ ไม่ต้อง navigate ตรงนี้ - useEffect ด้านบนจะจัดการให้เมื่อ user มีค่า
-      
+      // ไม่ต้อง navigate - useEffect จะจัดการเมื่อ user มีค่า
+
     } catch (err) {
       console.error('Login error:', err)
       
-      // ✅ ลบ session ถ้า login ไม่สำเร็จ
+      // ลบ session ถ้า login ไม่สำเร็จ
       sessionStorage.removeItem('sessionId')
       sessionStorage.removeItem('sessionExpiry')
       sessionStorage.removeItem('loginTime')
@@ -148,9 +164,6 @@ const Login = () => {
     }
   }
 
-  // ✅ ถ้ากำลังตรวจสอบ user อยู่ ให้แสดง loading
-  // (ป้องกันการกด login ซ้ำ)
-  
   return (
     <div className="auth-page">
       <div className="auth-layout">
@@ -237,4 +250,3 @@ const Login = () => {
 }
 
 export default Login
-
