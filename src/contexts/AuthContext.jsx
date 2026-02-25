@@ -20,12 +20,10 @@ import { auth, db } from '../firebase'
 
 const AuthContext = createContext(null)
 
-// ===== CONFIG =====
 const SESSION_TIMEOUT_HOURS = 5
 const SESSION_TIMEOUT_MS = SESSION_TIMEOUT_HOURS * 60 * 60 * 1000
 const SESSION_CHECK_INTERVAL = 60 * 1000
 
-// Default roles (ใช้เมื่อยังไม่มีใน Firestore)
 const DEFAULT_ROLES = {
   owner: {
     id: 'owner',
@@ -65,7 +63,6 @@ const DEFAULT_ROLES = {
   },
 }
 
-// รายการ permissions ทั้งหมดในระบบ
 export const ALL_PERMISSIONS = [
   { id: 'nutrition', name: 'คำนวณโภชนาการ', icon: '🧮', description: 'เข้าถึงหน้าคำนวณคุณค่าทางโภชนาการ' },
   { id: 'thai-rdi', name: 'ฉลากโภชนาการ', icon: '🏷️', description: 'สร้างฉลากโภชนาการ Thai RDI' },
@@ -88,18 +85,14 @@ export const AuthProvider = ({ children }) => {
   const [permissions, setPermissions] = useState([])
   const [loading, setLoading] = useState(true)
   
-  // Session states
   const [sessionExpiry, setSessionExpiry] = useState(null)
   const [timeRemaining, setTimeRemaining] = useState(null)
   const [logoutReason, setLogoutReason] = useState(null)
   
-  // Refs
   const sessionCheckIntervalRef = useRef(null)
   const sessionListenerRef = useRef(null)
   const currentSessionIdRef = useRef(null)
-  const isProcessingAuthRef = useRef(false)
 
-  // ===== ตั้งค่า Session Persistence =====
   useEffect(() => {
     const setupPersistence = async () => {
       try {
@@ -111,7 +104,6 @@ export const AuthProvider = ({ children }) => {
     setupPersistence()
   }, [])
 
-  // ===== Force Logout Function =====
   const forceLogout = useCallback(async (reason = 'unknown') => {
     console.log('Force logout triggered:', reason)
     
@@ -160,7 +152,6 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user])
 
-  // ===== Check Session Timeout =====
   const checkSessionTimeout = useCallback(() => {
     const expiry = sessionStorage.getItem('sessionExpiry')
     
@@ -178,7 +169,6 @@ export const AuthProvider = ({ children }) => {
     }
   }, [forceLogout])
 
-  // ===== Start Session Timer =====
   const startSessionTimer = useCallback(() => {
     if (sessionCheckIntervalRef.current) {
       clearInterval(sessionCheckIntervalRef.current)
@@ -204,7 +194,6 @@ export const AuthProvider = ({ children }) => {
     checkSessionTimeout()
   }, [checkSessionTimeout])
 
-  // ===== Listen for Session Changes (Single Device) =====
   const startSessionListener = useCallback((userId, mySessionId) => {
     if (sessionListenerRef.current) {
       sessionListenerRef.current()
@@ -232,7 +221,6 @@ export const AuthProvider = ({ children }) => {
     )
   }, [forceLogout])
 
-  // โหลด roles ทั้งหมดจาก Firestore
   const loadRoles = async () => {
     try {
       const rolesSnap = await getDocs(collection(db, 'roles'))
@@ -252,10 +240,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (isProcessingAuthRef.current) {
-        return
-      }
-      isProcessingAuthRef.current = true
+      console.log('onAuthStateChanged:', firebaseUser?.email || 'no user')
       
       try {
         const roles = await loadRoles()
@@ -278,27 +263,30 @@ export const AuthProvider = ({ children }) => {
           }
           
           setLoading(false)
-          isProcessingAuthRef.current = false
           return
         }
 
-        // รอให้ sessionStorage มีค่าก่อน (จาก Login.jsx)
+        // ✅ รอให้ sessionStorage มีค่า (Login.jsx จะ set หลัง Firestore)
         let storedSessionId = sessionStorage.getItem('sessionId')
         let attempts = 0
-        while (!storedSessionId && attempts < 20) {
+        const maxAttempts = 30 // รอสูงสุด 3 วินาที
+        
+        while (!storedSessionId && attempts < maxAttempts) {
           await new Promise(resolve => setTimeout(resolve, 100))
           storedSessionId = sessionStorage.getItem('sessionId')
           attempts++
         }
         
+        console.log('Session ID from storage:', storedSessionId)
+        
         if (!storedSessionId) {
-          console.log('No session ID found after waiting, logging out')
+          console.log('No session ID found, signing out')
           await signOut(auth)
           setLoading(false)
-          isProcessingAuthRef.current = false
           return
         }
-        
+
+        // ✅ ตรวจสอบ session expiry
         const storedExpiry = sessionStorage.getItem('sessionExpiry')
         if (storedExpiry) {
           const expiryTime = parseInt(storedExpiry, 10)
@@ -310,36 +298,41 @@ export const AuthProvider = ({ children }) => {
             sessionStorage.removeItem('loginTime')
             await signOut(auth)
             setLoading(false)
-            isProcessingAuthRef.current = false
             return
           }
         }
 
+        // ✅ ดึงข้อมูล user จาก Firestore
         const userRef = doc(db, 'users', firebaseUser.uid)
         const snap = await getDoc(userRef)
-
+        
+        let userRole = 'user'
+        
         if (snap.exists()) {
           const userData = snap.data()
+          console.log('User data from Firestore:', userData)
+          console.log('Firestore role:', userData.role)
+          console.log('Firestore sessionId:', userData.currentSessionId)
+          console.log('Local sessionId:', storedSessionId)
           
+          // ✅ ตรวจสอบ session ตรงกันหรือไม่
+          // ข้าม check ถ้า currentSessionId ใน Firestore เป็น null (เพิ่ง logout)
           if (userData.currentSessionId && userData.currentSessionId !== storedSessionId) {
-            console.log('Session mismatch:', userData.currentSessionId, 'vs', storedSessionId)
+            console.log('Session mismatch - another device')
             setLogoutReason('another_device')
             sessionStorage.removeItem('sessionId')
             sessionStorage.removeItem('sessionExpiry')
             sessionStorage.removeItem('loginTime')
             await signOut(auth)
             setLoading(false)
-            isProcessingAuthRef.current = false
             return
           }
-        }
-
-        setUser(firebaseUser)
-        currentSessionIdRef.current = storedSessionId
-
-        let userRole = 'user'
-
-        if (!snap.exists()) {
+          
+          // ✅ อ่าน role จาก Firestore
+          userRole = userData.role || 'user'
+        } else {
+          // User ใหม่ - ไม่ควรเกิดขึ้นเพราะ Login.jsx สร้างไว้แล้ว
+          console.log('User document not found, creating...')
           await setDoc(userRef, {
             uid: firebaseUser.uid,
             email: firebaseUser.email || '',
@@ -350,13 +343,16 @@ export const AuthProvider = ({ children }) => {
             lastLogin: serverTimestamp()
           })
           userRole = 'user'
-        } else {
-          userRole = snap.data().role || 'user'
         }
 
+        console.log('Setting user role to:', userRole)
+        
+        // ✅ Set state
+        setUser(firebaseUser)
+        currentSessionIdRef.current = storedSessionId
         setRole(userRole)
 
-        const currentRoleData = roles[userRole] || DEFAULT_ROLES.user
+        const currentRoleData = roles[userRole] || DEFAULT_ROLES[userRole] || DEFAULT_ROLES.user
         setRoleData(currentRoleData)
         setPermissions(currentRoleData?.permissions || [])
         
@@ -372,7 +368,6 @@ export const AuthProvider = ({ children }) => {
         setPermissions(DEFAULT_ROLES.user.permissions)
       } finally {
         setLoading(false)
-        isProcessingAuthRef.current = false
       }
     })
 
@@ -452,3 +447,4 @@ export const AuthProvider = ({ children }) => {
 }
 
 export const useAuth = () => useContext(AuthContext)
+
