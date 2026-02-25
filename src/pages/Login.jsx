@@ -1,13 +1,34 @@
 // src/pages/Login.jsx
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signInWithEmailAndPassword } from 'firebase/auth'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useToast } from '../contexts/ToastContext'
+import { useAuth } from '../contexts/AuthContext'
 import logo1 from '../assets/logo1.png'
 import logo2 from '../assets/logo2.png'
 import logo3 from '../assets/logo3.png'
+
+const SESSION_TIMEOUT_MS = 5 * 60 * 60 * 1000
+
+const generateSessionId = () => {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+}
+
+const getDeviceInfo = () => {
+  const ua = navigator.userAgent
+  let device = 'Unknown Device'
+  
+  if (/iPhone/i.test(ua)) device = 'iPhone'
+  else if (/iPad/i.test(ua)) device = 'iPad'
+  else if (/Android/i.test(ua)) device = 'Android'
+  else if (/Windows/i.test(ua)) device = 'Windows PC'
+  else if (/Mac/i.test(ua)) device = 'Mac'
+  else if (/Linux/i.test(ua)) device = 'Linux'
+  
+  return device
+}
 
 const Login = () => {
   const [identifier, setIdentifier] = useState('')
@@ -17,6 +38,39 @@ const Login = () => {
 
   const navigate = useNavigate()
   const { showToast } = useToast()
+  const { user, logoutReason, clearLogoutReason, SESSION_TIMEOUT_HOURS } = useAuth()
+
+  // ถ้า user มีค่าแล้ว (login สำเร็จ) ให้ไปหน้า dashboard
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, navigate])
+
+  // แสดง error จาก logout reason
+  useEffect(() => {
+    if (logoutReason && logoutReason !== 'manual') {
+      let message = ''
+      switch (logoutReason) {
+        case 'session_expired':
+          message = `Session หมดอายุ (เกิน ${SESSION_TIMEOUT_HOURS} ชั่วโมง)`
+          break
+        case 'another_device':
+          message = 'มีการเข้าสู่ระบบจากอุปกรณ์อื่น'
+          break
+        case 'session_invalid':
+          message = 'Session ไม่ถูกต้อง กรุณาเข้าสู่ระบบใหม่'
+          break
+        default:
+          break
+      }
+      if (message) {
+        setError(message)
+        showToast(message, 'warning')
+      }
+      clearLogoutReason()
+    }
+  }, [logoutReason, clearLogoutReason, SESSION_TIMEOUT_HOURS, showToast])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -40,13 +94,55 @@ const Login = () => {
         email = userData.email
       }
 
-      // ล็อกอินด้วย email
-      await signInWithEmailAndPassword(auth, email, password)
+      // ✅ สร้าง session ID ใหม่
+      const newSessionId = generateSessionId()
+      const deviceInfo = getDeviceInfo()
+      const expiryTime = Date.now() + SESSION_TIMEOUT_MS
+
+      // ✅ ล็อกอินด้วย email ก่อน
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      const uid = userCredential.user.uid
+
+      // ✅ อัพเดท Firestore ก่อน sessionStorage
+      const userRef = doc(db, 'users', uid)
+      const userSnap = await getDoc(userRef)
+      
+      if (userSnap.exists()) {
+        // User มีอยู่แล้ว - อัพเดท session
+        await updateDoc(userRef, {
+          currentSessionId: newSessionId,
+          lastLogin: serverTimestamp(),
+          lastDevice: deviceInfo
+        })
+      } else {
+        // User ใหม่ - สร้าง document
+        await setDoc(userRef, {
+          uid: uid,
+          email: userCredential.user.email || '',
+          displayName: userCredential.user.displayName || '',
+          role: 'user',
+          currentSessionId: newSessionId,
+          lastLogin: serverTimestamp(),
+          lastDevice: deviceInfo,
+          createdAt: serverTimestamp()
+        })
+      }
+
+      // ✅ บันทึก session ลง sessionStorage หลังจาก Firestore อัพเดทเสร็จ
+      sessionStorage.setItem('sessionId', newSessionId)
+      sessionStorage.setItem('sessionExpiry', expiryTime.toString())
+      sessionStorage.setItem('loginTime', Date.now().toString())
 
       showToast('เข้าสู่ระบบสำเร็จ', 'success')
-      navigate('/dashboard')
+      // ไม่ต้อง navigate - useEffect จะจัดการเมื่อ user มีค่า
+
     } catch (err) {
       console.error('Login error:', err)
+      
+      // ลบ session ถ้า login ไม่สำเร็จ
+      sessionStorage.removeItem('sessionId')
+      sessionStorage.removeItem('sessionExpiry')
+      sessionStorage.removeItem('loginTime')
 
       let message = 'ไม่สามารถเข้าสู่ระบบได้'
       if (err.code === 'auth/user-not-found') {
@@ -111,6 +207,7 @@ const Login = () => {
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder="กรอก Username หรืออีเมล"
                   required
+                  disabled={loading}
                 />
               </label>
 
@@ -122,6 +219,7 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="กรอกรหัสผ่าน"
                   required
+                  disabled={loading}
                 />
               </label>
 
@@ -133,6 +231,16 @@ const Login = () => {
             <div className="auth-links">
               <a href="#/forgot-password">ลืมรหัสผ่าน?</a> ·{' '}
               <a href="#/register">สมัครสมาชิก</a>
+            </div>
+
+            <div className="login-security-info">
+              <h4>🔐 ความปลอดภัย</h4>
+              <ul>
+                <li>⏰ Session หมดอายุใน {SESSION_TIMEOUT_HOURS || 5} ชั่วโมง</li>
+                <li>📱 Login ได้เพียง 1 อุปกรณ์เท่านั้น</li>
+                <li>🔄 Login ซ้อนจะถูก Logout อัตโนมัติ</li>
+                <li>🗑️ ปิด Browser = ต้อง Login ใหม่</li>
+              </ul>
             </div>
           </div>
         </section>
