@@ -1,6 +1,6 @@
 // src/pages/Login.jsx
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '../firebase'
@@ -31,14 +31,21 @@ const getDeviceInfo = () => {
 }
 
 const Login = () => {
-  const [identifier, setIdentifier] = useState('') // username หรือ email
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const navigate = useNavigate()
   const { showToast } = useToast()
-  const { logoutReason, clearLogoutReason, SESSION_TIMEOUT_HOURS } = useAuth()
+  const { user, logoutReason, clearLogoutReason, SESSION_TIMEOUT_HOURS } = useAuth()
+
+  // ✅ ถ้า user มีค่าแล้ว (login สำเร็จ) ให้ไปหน้า dashboard
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, navigate])
 
   // แสดง error จาก logout reason
   useEffect(() => {
@@ -83,20 +90,21 @@ const Login = () => {
           throw new Error('USERNAME_NOT_FOUND')
         }
 
-        // สมมติว่า username ไม่ซ้ำ → เอา doc แรก
         const userData = snapshot.docs[0].data()
         email = userData.email
       }
 
-      // ล็อกอินด้วย email (จาก username หรือ email ที่พิมพ์มา)
-      const userCredential = await signInWithEmailAndPassword(auth, email, password)
-      
-      // สร้าง session ใหม่
+      // ✅ สร้าง session ก่อน login
       const newSessionId = generateSessionId()
       const deviceInfo = getDeviceInfo()
       
-      // บันทึก session ลง sessionStorage
+      // ✅ บันทึก session ลง sessionStorage ก่อน
       sessionStorage.setItem('sessionId', newSessionId)
+      sessionStorage.setItem('sessionExpiry', (Date.now() + 5 * 60 * 60 * 1000).toString())
+      sessionStorage.setItem('loginTime', Date.now().toString())
+
+      // ล็อกอินด้วย email
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
       
       // อัพเดท session ใน Firestore
       try {
@@ -110,9 +118,15 @@ const Login = () => {
       }
 
       showToast('เข้าสู่ระบบสำเร็จ', 'success')
-      navigate('/dashboard')
+      // ✅ ไม่ต้อง navigate ตรงนี้ - useEffect ด้านบนจะจัดการให้เมื่อ user มีค่า
+      
     } catch (err) {
       console.error('Login error:', err)
+      
+      // ✅ ลบ session ถ้า login ไม่สำเร็จ
+      sessionStorage.removeItem('sessionId')
+      sessionStorage.removeItem('sessionExpiry')
+      sessionStorage.removeItem('loginTime')
 
       let message = 'ไม่สามารถเข้าสู่ระบบได้'
       if (err.code === 'auth/user-not-found') {
@@ -134,10 +148,12 @@ const Login = () => {
     }
   }
 
+  // ✅ ถ้ากำลังตรวจสอบ user อยู่ ให้แสดง loading
+  // (ป้องกันการกด login ซ้ำ)
+  
   return (
     <div className="auth-page">
       <div className="auth-layout">
-        {/* ฝั่งซ้าย: แนะนำ Nutrition App */}
         <section className="auth-left">
           <h1 className="auth-app-name">Nutrition App</h1>
           <p className="auth-app-desc">
@@ -153,10 +169,8 @@ const Login = () => {
           </ul>
         </section>
 
-        {/* ฝั่งขวา: ฟอร์มเข้าสู่ระบบ */}
         <section className="auth-right">
           <div className="auth-card">
-            {/* โลโก้ 3 อันด้านบน */}
             <div className="auth-logo-row">
               <img src={logo1} alt="โลโก้ 1" />
               <img src={logo2} alt="โลโก้ 2" />
@@ -165,7 +179,6 @@ const Login = () => {
 
             <h1 className="auth-title">เข้าสู่ระบบ</h1>
 
-            {/* แสดง Error */}
             {error && (
               <div className="auth-error">
                 <span>⚠️</span> {error}
@@ -181,6 +194,7 @@ const Login = () => {
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder="กรอก Username หรืออีเมล"
                   required
+                  disabled={loading}
                 />
               </label>
 
@@ -192,6 +206,7 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="กรอกรหัสผ่าน"
                   required
+                  disabled={loading}
                 />
               </label>
 
@@ -205,7 +220,6 @@ const Login = () => {
               <a href="#/register">สมัครสมาชิก</a>
             </div>
 
-            {/* Security Info */}
             <div className="login-security-info">
               <h4>🔐 ความปลอดภัย</h4>
               <ul>
@@ -223,3 +237,4 @@ const Login = () => {
 }
 
 export default Login
+
